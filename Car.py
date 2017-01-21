@@ -4,6 +4,7 @@
 # Time created: 2017/1/21
 
 import random
+import Map
 
 DEC_SPEED_PRO = 0.2
 CHANGE_LANE_PRO = 0.5
@@ -58,7 +59,7 @@ class Car:
         print("Car %d gap_front = %d" %(self.car_id, gap))
         return gap
 
-    def gap_right(self):# 计算与右车道车距离
+    def gap_right(self):# 计算与右车道车距离，返回与右前车距离，右后车距离，右后车
         gap_f = 0
         start_f = self.pos_y
         end_f = min(self.pos_y + self.speed_y + 3, LANE_LENGTH)
@@ -74,14 +75,15 @@ class Car:
         while (temp_b >= 0):
             if (self.lane_map.have_car(self.pos_x + 1, temp_b) == True):
                 gap_b = self.pos_y - temp_b - 1
-                temp_car = self.lane_map.get_car()
-        end_f
+                temp_car = self.lane_map.get_car(self.pos_x + 1, temp_b)
+            temp_b -= 1
+        return (gap_f, gap_b, temp_car)
 
 
     def refresh_speed(self):
         if (self.is_auto == False):# 非自动驾驶
             # 行进步骤
-            gap = gap_front()
+            gap = self.gap_front()
             if (self.speed_y >= gap):# 速度大于等于间隔，减速至gap
                 if (DEC_SPEED_PRO > random.random()):# 减速
                     self.speed_y = gap - 1
@@ -92,13 +94,18 @@ class Car:
                     self.speed_y += 1
             # 换道步骤
             if (self.pos_x == 0):
-
+                (gap_f, gap_b, car_b) = self.gap_right()
+                if (gap_f > gap and gap_b > car_b.get_speed_y()):# 可以并道
+                    if (CHANGE_LANE_PRO > random.random()):# 并道
+                        self.speed_x = 1
+                    else:# 不并道
+                        self.speed_x = 0
         print("Car %d speed = %d, %d" %(self.car_id, self.speed_y, self.speed_x))
-        return (speed_x, speed_y)
+        return (self.speed_x, self.speed_y)
 
     def refresh_pos(self):
-        self.pos_x += speed_x
-        self.pos_y += speed_y
+        self.pos_x += self.speed_x
+        self.pos_y += self.speed_y
         print("Car %d pos = %d, %d" % (self.car_id, self.pos_y, self.pos_x))
         #if (self.pos_y > LANE_LENGTH):
             # 开出收费站
