@@ -92,7 +92,7 @@ class CarGenerator:
         for car in cars:
             waiting_cars_cnt_lst = [toll_booth.get_waiting_cars_cnt() for toll_booth in self.toll_booths]
             min_ind = _get_min_index(waiting_cars_cnt_lst)
-            self.toll_booths[min_ind].add_car(car)
+            self.toll_booths[min_ind].add_car(car)+
 
 
 # class TollBooth:  # 收费站的基类
@@ -114,14 +114,16 @@ class TollBooth:  # 由人控制的收费站
         self.map = map
         self.update_interval = g_update_interval
         self.location = location  # 所处道路的编号
-        self.type = tb_type  # 收费站的类型，有三种，类型会影响车辆放行的时间  conventional (human-staffed) tollbooths, exact-change (automated) tollbooths, and electronic toll collection booths
+        self.type = tb_type  # 收费站的类型，有三种，类型会影响车辆放行的时间，此外还会影响放行车辆时车辆的速度  conventional (human-staffed) tollbooths, exact-change (automated) tollbooths, and electronic toll collection booths
         # 对于有人的，车辆肯定会停下来
+        # 三种类型：
         # 对于exact-change tollbooths?
 
     # def car_in(self, car):
     #     if len(self.wait_queue) < 1:  # 等待队列中没有车
 
     def calc_this_car_process_time(self):  # 应对以后需要随机处理时间的情况
+
         return self.solid_car_process_time
 
     def get_waiting_cars_cnt(self):  # 返回等待队列中的车数 + 当前收费站正在处理的车数
@@ -159,8 +161,8 @@ class TollBooth:  # 由人控制的收费站
                     if len(self.wait_queue) > 0:  # 如果当前有车正在等待
                         self.car_in_process = self.wait_queue.pop(0)
                         self.current_car_remaining_process_time = self.calc_this_car_process_time()
-                    else: # 当前没有车正在等待
-                        pass # 什么也不做
+                    else:  # 当前没有车正在等待
+                        pass  # 什么也不做
         else:  # 如果当前没有处理车辆
             if len(self.wait_queue) > 0:  # 如果有车在等待了，取一辆车进行处理
                 self.car_in_process = self.wait_queue.pop(0)
@@ -186,7 +188,9 @@ def test_car_generator():
 
 
 
+
 if __name__ == '__main__':
     test_car_generator()
+
 
     pass
