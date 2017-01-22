@@ -57,12 +57,20 @@ class Car:
     def gap_front(self):# 计算与前车距离
         gap = 0
         start = self.pos_y + 1
-        end = min(self.pos_y + self.speed_y + 2, LANE_LENGTH)
+        # end = min(self.pos_y + self.speed_y + 2, self.lane_map.get_length())
+        end = self.pos_y + self.speed_y + 2
+        print (start, end)
         for i in range(start, end):
-            if (self.lane_map.have_car(self.pos_x, i) == True or self.lane_map.is_road(self.pos_x, i) == False):
+            if (i >= self.lane_map.get_length()):
+                gap = 100
+            elif (self.lane_map.have_car(self.pos_x, i) == True or self.lane_map.is_road(self.pos_x, i) == False):
                 gap = i - self.pos_y - 1
+                # print("????")
+                # print(self.lane_map.have_car(self.pos_x, i), self.lane_map.is_road(self.pos_x, i))
+                # print("????")
                 break
             if (i == end - 1):
+                # print("!!!!")
                 gap = i - self.pos_y
         print("Car %d gap_front = %d" %(self.car_id, gap))
         return gap
@@ -70,7 +78,7 @@ class Car:
     def gap_right(self):# 计算与右车道车距离，返回与右前车距离，右后车距离，右后车
         gap_f = 0
         start_f = self.pos_y
-        end_f = min(self.pos_y + self.speed_y + 3, LANE_LENGTH)
+        end_f = min(self.pos_y + self.speed_y + 3, self.lane_map.get_length())
         for i in range(start_f, end_f):
             if (self.lane_map.have_car(self.pos_x + 1, i) == True or self.lane_map.is_road(self.pos_x + 1, i) == False):
                 gap_f = i - self.pos_y - 1
@@ -90,7 +98,7 @@ class Car:
     def gap_left(self):# 计算与左车道车距离，返回与左前车距离，左后车距离，左后车
         gap_f = 0
         start_f = self.pos_y
-        end_f = min(self.pos_y + self.speed_y + 3, LANE_LENGTH)
+        end_f = min(self.pos_y + self.speed_y + 3, self.lane_map.get_length())
         for i in range(start_f, end_f):
             if (self.lane_map.have_car(self.pos_x - 1, i) == True or self.lane_map.is_road(self.pos_x - 1, i) == False):
                 gap_f = i - self.pos_y - 1
@@ -109,54 +117,77 @@ class Car:
 
 
     def refresh_speed(self):
+        print("pos: %d, %d" %(self.pos_x, self.pos_y))
         if (self.is_auto == False):# 非自动驾驶
             # 行进步骤
             gap = self.gap_front()
+            print("speed_y = %d" %(self.speed_y))
             if (self.speed_y >= gap):# 速度大于等于间隔，减速至gap
                 if (DEC_SPEED_PRO > random.random()):# 减速
-                    self.speed_y = gap - 1
+                    self.speed_y = max(0, gap - 1)
                 else:# 不减速
                     self.speed_y = gap
             else:# 速度小于间隔
                 if (DEC_SPEED_PRO < random.random()):# 加速
                     self.speed_y += 1
+            print("speed_y = %d" %(self.speed_y))
             # 换道步骤
             if (self.pos_x == 0 or self.lane_map.is_road(self.pos_x - 1, self.pos_y) == False):# 最左侧车道
+                print("left! %d, %d" %(self.pos_x, self.pos_y))
                 (gap_f, gap_b, car_b) = self.gap_right()
-                if (gap_f > gap and gap_b > car_b.get_speed_y() + 1):# 可以并道
+                print("gap_f:%d gap_b:%d" %(gap_f, gap_b))
+                if (gap_f > gap and car_b != None and gap_b > car_b.get_speed_y() + 1):# 可以并道
                     if (CHANGE_LANE_PRO > random.random()):# 并道
                         self.speed_x = 1
+                        self.speed_y = min(gap_f, self.speed_y)
                     else:# 不并道
                         self.speed_x = 0
-            elif (self.pos_x == self.lane_map.get_B() or self.lane_map.is_road(self.pos_x + 1, self.pos_y) == False):# 最右侧车道
+                else:
+                    self.speed_x = 0
+            elif (self.pos_x == self.lane_map.get_B() - 1 or self.lane_map.is_road(self.pos_x + 1, self.pos_y) == False):# 最右侧车道
+                print("right! %d, %d" % (self.pos_x, self.pos_y))
                 (gap_f, gap_b, car_b) = self.gap_left()
-                if (gap_f > gap and gap_b > car_b.get_speed_y() + 1):# 可以并道
+                print("gap_f:%d gap_b:%d" % (gap_f, gap_b))
+                if (gap_f > gap and car_b != None and gap_b > car_b.get_speed_y() + 1):# 可以并道
                     if (CHANGE_LANE_PRO > random.random()):# 并道
                         self.speed_x = -1
+                        self.speed_y = min(gap_f, self.speed_y)
                     else:# 不并道
                         self.speed_x = 0
+                else:
+                    self.speed_x = 0
             else:# 中间车道
+                left_checked = False
+                print("middle! %d, %d" % (self.pos_x, self.pos_y))
                 (gap_fl, gap_bl, car_bl) = self.gap_left()
-                if (gap_fl > gap and gap_bl > car_bl.get_speed_y() + 1):  # 可以并道
+                print("gap_fl:%d gap_bl:%d" % (gap_fl, gap_bl))
+                if (gap_fl > gap and car_bl != None and gap_bl > car_bl.get_speed_y() + 1):  # 可以并道
                     if (CHANGE_LANE_PRO > random.random()):  # 并道
                         self.speed_x = -1
+                        self.speed_y = min(gap_fl, self.speed_y)
                     else:  # 不并道
                         self.speed_x = 0
-                if (self.speed_x == 0):# 不向左并道，考虑向右并道
+                    left_checked = True
+                if (left_checked == False):# 不向左并道，考虑向右并道
                     (gap_fr, gap_br, car_br) = self.gap_right()
-                    if (gap_fr > gap and gap_br > car_br.get_speed_y() + 1):  # 可以并道
+                    print("gap_fr:%d gap_br:%d" % (gap_fr, gap_br))
+                    if (gap_fr > gap and car_br != None and gap_br > car_br.get_speed_y() + 1):  # 可以并道
                         if (CHANGE_LANE_PRO > random.random()):  # 并道
                             self.speed_x = 1
+                            self.speed_y = min(gap_fr, self.speed_y)
                         else:  # 不并道
                             self.speed_x = 0
-        print("Car %d speed = %d, %d" %(self.car_id, self.speed_y, self.speed_x))
+                    else:
+                        self.speed_x = 0
+        print("Car %d speed = %d, %d" %(self.car_id, self.speed_x, self.speed_y))
         return (self.speed_x, self.speed_y)
 
     def refresh_pos(self):
+        print("Car %d pos = %d, %d" % (self.car_id, self.pos_x, self.pos_y))
         self.lane_map.move(self, self.pos_x, self.pos_y, self.pos_x + self.speed_x, self.pos_y + self.speed_y)
         self.pos_x += self.speed_x
         self.pos_y += self.speed_y
-        print("Car %d pos = %d, %d" % (self.car_id, self.pos_y, self.pos_x))
+        print("After: Car %d pos = %d, %d" % (self.car_id, self.pos_x, self.pos_y))
 
 if __name__ == '__main__':
     pass

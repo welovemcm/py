@@ -31,7 +31,7 @@ class Map:
                 else:
                     map_temp[i][j]=0
 
-        print map_temp
+        # print map_temp
 
         for i in range(self.__length):
             for j in range(self.__B):
@@ -49,12 +49,14 @@ class Map:
             for j in range(self.__B):
                 if self.__map[j][i]==-1:
                     print str(self.__map[j][i]),
+                elif self.__map[j][i]==0:
+                    print ' '+str(self.__map[j][i]),
                 else:
-                     print ' '+str(self.__map[j][i]),
+                    print ' '+str(self.__map[j][i].car_id),
             print('\n')
 
     def is_road(self,x,y):
-        if self.__map[x][y]!=0:
+        if self.__map[x][y]!=-1:
             return 1
         else:
             return 0

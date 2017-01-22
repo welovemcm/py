@@ -27,7 +27,7 @@ class CarGenerator:
         self.update_count = 0  # 到目前为止调用了多少次更新
         self.toll_booths = self.__init_toll_baths()
         self.incoming_traffic_flow = incoming_traffic_flow  # 在fan_out_start_point进入的车辆数目
-        self.cur_generated_car_id = -1
+        self.cur_generated_car_id = 0
         # 初始化概率表
         self.max_probability_lst_len = 100
         self.probability_lst = [self.__vehicle_flow_probability_function(i) for i in range(self.max_probability_lst_len)]
@@ -57,6 +57,7 @@ class CarGenerator:
         for i in range(self.max_probability_lst_len):
             if prob < self.probability_lst[i]:
                 return i - 1
+        return self.max_probability_lst_len - 1
 
     def update(self):
         self.__update_constant_vehicle_flow()
@@ -179,6 +180,7 @@ class TollBooth:  # 由人控制的收费站
                     self.car_in_process.set_pos_x(self.location)
                     self.car_in_process.set_pos_y(0)
                     self.map.put_car(self.location, 0, self.car_in_process)
+                    print ("put %d" %(self.location))
                     self.car_in_process = None  # 清空当前处理的car
                     # 放进来新的car 到收费站
                     if len(self.wait_queue) > 0:  # 如果当前有车正在等待
