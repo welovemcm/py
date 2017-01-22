@@ -52,12 +52,14 @@ class Map:
         for i in range(self.__length)[::-1]:
             for j in range(self.__B):
                 if self.__map[j][i]==-1:
-                    print str(self.__map[j][i]) + '\t',
+                    print str(self.__map[j][i]) + '\t\t',
                 elif self.__map[j][i]==0:
-                    print str(self.__map[j][i]) + '\t',
+                    print str(self.__map[j][i]) + '\t\t',
                     #print ' '+str(self.__map[j][i]),
                 else:
                     print str(self.__map[j][i].car_id) + '\t',
+                    if (self.__map[j][i].car_id < 1000):
+                        print ('\t'),
                     #print ' '+str(self.__map[j][i].car_id),
             print('\n'),
 
@@ -92,7 +94,7 @@ class Map:
         try:
             self.__map[x_end][y_end]=car
         except IndexError:
-            print ("Car %d going out of map!" %(car.car_id))
+            print ("Car %d going out of map! Using time: %d" %(car.car_id, car.spend_time))
             self.__car_list.remove(car)
 
     def avi(self):

@@ -15,12 +15,12 @@ if __name__ == "__main__":
     print mmap.get_B()
     print mmap.get_length()
 
-    car_generator = CarGenerator(mmap, 3)  # 每秒10辆车
+    car_generator = CarGenerator(mmap, 1)  # 每秒10辆车
 
     car_list = mmap.avi()
     random.shuffle(car_list)
 
-    while (time_t < 1000):
+    while (time_t < 300):
         print("Current Cycle: %d" %(car_generator.update_count))
 
         for a_car in car_list:
