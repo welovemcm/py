@@ -146,9 +146,9 @@ class TollBooth:  # 由人控制的收费站
     def calc_this_car_process_time(self):  # 应对以后需要随机处理时间的情况, 包括两部分，减速时间和处理时间
         car = self.car_in_process
         if self.type == 'ETC':
-            return self.in_distance / car.get_speed_y()
+            return 0.0
         elif self.type == 'MTC' or self.type == 'ATC':
-            t_in = 2 * self.in_distance / car.get_speed_y()
+            t_in = 2.0 * self.in_distance / car.get_speed_y()
             t_service = random.normalvariate(self.mean_service_time, self.service_time_std)
             # return t_in + t_service
             return t_service  # t_in 单独考虑
@@ -166,9 +166,9 @@ class TollBooth:  # 由人控制的收费站
     def add_car_to_in_road_queue(self, car):
         self.in_road_queue.append(car)
         if self.type == 'MTC' or self.type == 'ATC':
-            self.in_road_queue_remaining_time.append(2 * self.in_distance / car.get_speed_y())
+            self.in_road_queue_remaining_time.append(2.0 * self.in_distance / car.get_speed_y())
         elif self.type == 'ETC':
-            self.in_road_queue_remaining_time.append(self.in_distance / car.get_speed_y())
+            self.in_road_queue_remaining_time.append(1.0 * self.in_distance / car.get_speed_y())
         else:
             raise Exception('unknown toll booth type!')
 
