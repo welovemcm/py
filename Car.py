@@ -30,6 +30,12 @@ class Car:
     def set_speed_y(self, speed_y):
         self.speed_y = speed_y
 
+    def set_pos_x(self, pos_x):
+        self.pos_x = pos_x
+
+    def set_pos_y(self, pos_y):
+        self.pos_y = pos_y
+
     def get_speed_x(self):
         return self.speed_x
 
@@ -147,13 +153,10 @@ class Car:
         return (self.speed_x, self.speed_y)
 
     def refresh_pos(self):
-        if (self.pos_y + self.speed_y >= self.lane_map.get_length()):
-            print("Car %d out" %(self.car_id))
-        else:
-            self.lane_map.move(self, self.pos_x, self.pos_y, self.speed_x, self.speed_y)
-            self.pos_x += self.speed_x
-            self.pos_y += self.speed_y
-            print("Car %d pos = %d, %d" % (self.car_id, self.pos_y, self.pos_x))
+        self.lane_map.move(self, self.pos_x, self.pos_y, self.pos_x + self.speed_x, self.pos_y + self.speed_y)
+        self.pos_x += self.speed_x
+        self.pos_y += self.speed_y
+        print("Car %d pos = %d, %d" % (self.car_id, self.pos_y, self.pos_x))
 
 if __name__ == '__main__':
     pass

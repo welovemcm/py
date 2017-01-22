@@ -42,7 +42,7 @@ class CarGenerator:
         print [tb.get_waiting_cars_cnt() for tb in self.toll_booths]
 
     def __init_toll_baths(self):  # 还要支持不同收费站比例的变化
-        return [TollBooth(self.map, i, 'ATC') for i in range(tmp_n_toll_booths)]
+        return [TollBooth(self.map, i, 'ATC') for i in range(self.map.get_B())]
 
 
     def __vehicle_flow_probability_function(self, n_incoming_cars):
@@ -176,6 +176,8 @@ class TollBooth:  # 由人控制的收费站
                 else:  # 要放入的格子里没有车
                     if self.type == 'MTC' or self.type == 'ATC':
                         self.car_in_process.set_speed_y(0)  # 非自动收费的要减速到0
+                    self.car_in_process.set_pos_x(self.location)
+                    self.car_in_process.set_pos_y(0)
                     self.map.put_car(self.location, 0, self.car_in_process)
                     self.car_in_process = None  # 清空当前处理的car
                     # 放进来新的car 到收费站
