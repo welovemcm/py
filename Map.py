@@ -10,6 +10,10 @@ class Map:
         # self.__L=len([i for i in line_temp .split(',') if i==' 0'])
         # self.__B=len(line_temp.split(','))
         self.__car_list=[]
+        self.crash_cnt=0
+        self.exit_car_cnt=0
+        self.total_exit_time=0
+        self.debug = False
 
         line_count=1
         while(file_temp.readline()):
@@ -94,7 +98,11 @@ class Map:
         try:
             self.__map[x_end][y_end]=car
         except IndexError:
-            print ("Car %d going out of map! Using time: %d" %(car.car_id, car.spend_time))
+            if (self.debug):
+                print ("Car %d going out of map! Using time: %d Dec times: %d" %(car.car_id, car.spend_time, car.dec_cnt))
+            self.crash_cnt += car.dec_cnt
+            self.exit_car_cnt += 1
+            self.total_exit_time += car.spend_time
             self.__car_list.remove(car)
 
     def avi(self):
