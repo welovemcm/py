@@ -28,8 +28,9 @@ class CarGenerator:
         self.toll_booths = self.__init_toll_baths()
         self.incoming_traffic_flow = incoming_traffic_flow  # 在fan_out_start_point进入的车辆数目
         self.cur_generated_car_id = 0
+        self.new_cars_cnt = 0
         # 初始化概率表
-        self.max_probability_lst_len = 100
+        self.max_probability_lst_len = 10
         self.probability_lst = [self.__vehicle_flow_probability_function(i) for i in range(self.max_probability_lst_len)]
         for i in range(1, self.max_probability_lst_len):
             self.probability_lst[i] += self.probability_lst[i - 1]
@@ -50,14 +51,14 @@ class CarGenerator:
         exp_lam = math.exp(-1.0 * lam)
         if n_incoming_cars == 0:
             return exp_lam
-        return pow(lam, n_incoming_cars) / math.factorial(n_incoming_cars) * exp_lam
+        return 1.0 * pow(lam, n_incoming_cars) / math.factorial(n_incoming_cars) * exp_lam
 
 
     def __determine_k(self, prob):
         for i in range(self.max_probability_lst_len):
             if prob < self.probability_lst[i]:
-                return i - 1
-        return self.max_probability_lst_len - 1
+                return i
+        return self.max_probability_lst_len
 
     def update(self):
         self.__update_constant_vehicle_flow()
@@ -72,7 +73,8 @@ class CarGenerator:
         # 第一步 在 fan_out_start_point 生成车流，其车流量为 incoming_traffic_flow
         # 可以是每秒钟固定有 incoming_traffic_flow 辆车
         n_this_time_interval_incoming_cars = self.calc_this_time_interval_coming_cars()
-        print "Cargenerator: cycle ", self.update_count, " new cars: ", n_this_time_interval_incoming_cars
+        self.new_cars_cnt += n_this_time_interval_incoming_cars
+        print "Cargenerator: cycle ", self.update_count, " new cars this time: ", n_this_time_interval_incoming_cars, "new cars cnt: ", self.new_cars_cnt
         cars = [car_cls.Car(0, 10, 0, 0, self.map, False, self.__this_car_id()) for i in range(n_this_time_interval_incoming_cars)]
 
         # 第二步，在收费站之间分配车辆
@@ -95,7 +97,7 @@ class CarGenerator:
             waiting_cars_cnt_lst = [toll_booth.get_waiting_cars_cnt() for toll_booth in self.toll_booths]
             min_ind_lst = _get_min_indexes(waiting_cars_cnt_lst)
             min_ind = min_ind_lst[random.randint(0, len(min_ind_lst) - 1)]  # 随机选择一个
-            self.toll_booths[min_ind].add_car(car)
+            self.toll_booths[min_ind].add_car_new(car)
 
 
 # class TollBooth:  # 收费站的基类
@@ -110,6 +112,8 @@ class CarGenerator:
 class TollBooth:  # 由人控制的收费站
     def __init__(self, map, location, tb_type):
         self.wait_queue = []
+        self.in_road_queue = []
+        self.in_road_queue_remaining_time = []
         self.update_count = 0
         self.car_in_process = None
         self.current_car_remaining_process_time = None
@@ -125,7 +129,7 @@ class TollBooth:  # 由人控制的收费站
         # 三种类型：
         # 对于exact-change tollbooths?
 
-        self.in_distance = 0  # 假设是要先行驶100格才能到收费站
+        self.in_distance = 100  # 假设是要先行驶100格才能到收费站
         self.mean_service_time = 20  # 秒
         self.service_time_std = 10  # 秒
         if self.type == 'MTC':
@@ -145,7 +149,8 @@ class TollBooth:  # 由人控制的收费站
         elif self.type == 'MTC' or self.type == 'ATC':
             t_in = 2 * self.in_distance / car.get_speed_y()
             t_service = random.normalvariate(self.mean_service_time, self.service_time_std)
-            return t_in + t_service
+            # return t_in + t_service
+            return t_service  # t_in 单独考虑
         raise Exception('unknown toll booth type')
 
     def get_waiting_cars_cnt(self):  # 返回等待队列中的车数 + 当前收费站正在处理的车数
@@ -154,7 +159,19 @@ class TollBooth:  # 由人控制的收费站
         else:
             return len(self.wait_queue)
 
-    def add_car(self, car):
+    def add_car_new(self, car):
+        self.add_car_to_in_road_queue(car)
+
+    def add_car_to_in_road_queue(self, car):
+        self.in_road_queue.append(car)
+        if self.type == 'MTC' or self.type == 'ATC':
+            self.in_road_queue_remaining_time.append(2 * self.in_distance / car.get_speed_y())
+        elif self.type == 'ETC':
+            self.in_road_queue_remaining_time.append(self.in_distance / car.get_speed_y())
+        else:
+            raise Exception('unknown toll booth type!')
+
+    def add_car_to_process_queue(self, car):  # 收费站收费队列
         if self.car_in_process:  # 当前有车正在处理
             self.wait_queue.append(car)
         else:  # 当前没有车
@@ -169,6 +186,14 @@ class TollBooth:  # 由人控制的收费站
 
     def update(self):
         self.update_count += 1
+
+        # 检查是否有车进入了等待队列
+        assert len(self.in_road_queue_remaining_time) == len(self.in_road_queue)
+        for i in range(len(self.in_road_queue_remaining_time)):
+            self.in_road_queue_remaining_time[i] -= self.update_interval
+        while (len(self.in_road_queue_remaining_time) > 0) and (self.in_road_queue_remaining_time[0] <= 0):
+            self.wait_queue.append(self.in_road_queue.pop(0))
+            self.in_road_queue_remaining_time.pop(0)
 
         # 首先检查当前是否有车辆在处理
         if self.car_in_process:
@@ -221,6 +246,7 @@ def test_car_generator():
         car_generator.update()
         car_generator.print_toll_booths_waiting_queue()
         car_generator.map.show_map()
+
 
 
 
