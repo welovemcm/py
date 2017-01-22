@@ -10,7 +10,7 @@ import random
 
 if __name__ == "__main__":
     time_t = 0
-    mmap = Map('./map_scheme_test')
+    mmap = Map('./map_scheme_test_1')
     print mmap.get_L()
     print mmap.get_B()
     print mmap.get_length()

@@ -4,8 +4,11 @@ class Map:
     def __init__(self, map_file):
         file_temp=open(map_file,'r')
         line_temp=file_temp.readline()
-        self.__L=len([i for i in line_temp .split(',') if i==' 0'])
-        self.__B=len(line_temp.split(','))
+        # print line_temp
+        self.__L = len([i for i in line_temp.split('\t') if i == '0'])
+        self.__B = len(line_temp.split('\t'))
+        # self.__L=len([i for i in line_temp .split(',') if i==' 0'])
+        # self.__B=len(line_temp.split(','))
         self.__car_list=[]
 
         line_count=1
@@ -23,7 +26,8 @@ class Map:
 
         for i in range(self.__length):
             line_temp=file_temp.readline()
-            line_temp=line_temp.split(',')
+            line_temp = line_temp.split('\t')
+            #line_temp=line_temp.split(',')
 
             for j in range(self.__B):
                 if line_temp[j].strip()=='-1':
@@ -48,11 +52,13 @@ class Map:
         for i in range(self.__length)[::-1]:
             for j in range(self.__B):
                 if self.__map[j][i]==-1:
-                    print str(self.__map[j][i]),
+                    print str(self.__map[j][i]) + '\t',
                 elif self.__map[j][i]==0:
-                    print ' '+str(self.__map[j][i]),
+                    print str(self.__map[j][i]) + '\t',
+                    #print ' '+str(self.__map[j][i]),
                 else:
-                    print ' '+str(self.__map[j][i].car_id),
+                    print str(self.__map[j][i].car_id) + '\t',
+                    #print ' '+str(self.__map[j][i].car_id),
             print('\n'),
 
     def is_road(self,x,y):
@@ -100,7 +106,7 @@ class Map:
 
 
 def test():
-    t=Map('./map_scheme_test')
+    t=Map('./map_scheme_test_1')
     print t.get_L()
     print t.get_B()
     print t.get_length()
