@@ -123,28 +123,28 @@ class Car:
             # 换道步骤
             if (self.pos_x == 0 or self.lane_map.is_road(self.pos_x - 1, self.pos_y) == False):# 最左侧车道
                 (gap_f, gap_b, car_b) = self.gap_right()
-                if (gap_f > gap and gap_b > car_b.get_speed_y()):# 可以并道
+                if (gap_f > gap and gap_b > car_b.get_speed_y() + 1):# 可以并道
                     if (CHANGE_LANE_PRO > random.random()):# 并道
                         self.speed_x = 1
                     else:# 不并道
                         self.speed_x = 0
             elif (self.pos_x == self.lane_map.get_B() or self.lane_map.is_road(self.pos_x + 1, self.pos_y) == False):# 最右侧车道
                 (gap_f, gap_b, car_b) = self.gap_left()
-                if (gap_f > gap and gap_b > car_b.get_speed_y()):# 可以并道
+                if (gap_f > gap and gap_b > car_b.get_speed_y() + 1):# 可以并道
                     if (CHANGE_LANE_PRO > random.random()):# 并道
                         self.speed_x = -1
                     else:# 不并道
                         self.speed_x = 0
             else:# 中间车道
                 (gap_fl, gap_bl, car_bl) = self.gap_left()
-                if (gap_fl > gap and gap_bl > car_bl.get_speed_y()):  # 可以并道
+                if (gap_fl > gap and gap_bl > car_bl.get_speed_y() + 1):  # 可以并道
                     if (CHANGE_LANE_PRO > random.random()):  # 并道
                         self.speed_x = -1
                     else:  # 不并道
                         self.speed_x = 0
                 if (self.speed_x == 0):# 不向左并道，考虑向右并道
                     (gap_fr, gap_br, car_br) = self.gap_right()
-                    if (gap_fr > gap and gap_br > car_br.get_speed_y()):  # 可以并道
+                    if (gap_fr > gap and gap_br > car_br.get_speed_y() + 1):  # 可以并道
                         if (CHANGE_LANE_PRO > random.random()):  # 并道
                             self.speed_x = 1
                         else:  # 不并道
