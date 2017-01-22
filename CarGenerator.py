@@ -92,7 +92,8 @@ class CarGenerator:
         # 每次取等待队列中在等待车辆最少的收费站
         for car in cars:
             waiting_cars_cnt_lst = [toll_booth.get_waiting_cars_cnt() for toll_booth in self.toll_booths]
-            min_ind = _get_min_index(waiting_cars_cnt_lst)
+            min_ind_lst = _get_min_indexes(waiting_cars_cnt_lst)
+            min_ind = min_ind_lst[random.randint(0, len(min_ind_lst) - 1)]  # 随机选择一个
             self.toll_booths[min_ind].add_car(car)
 
 
@@ -125,7 +126,7 @@ class TollBooth:  # 由人控制的收费站
 
         self.in_distance = 100  # 假设是要先行驶100格才能到收费站
         self.mean_service_time = 20  # 秒
-        self.service_time_std = 10 # 秒
+        self.service_time_std = 10  # 秒
         if self.type == 'MTC':
             self.mean_service_time = 20
             self.service_time_std = 10
@@ -201,6 +202,14 @@ def _get_min_index(lst):
     for i in range(len(lst)):
         if lst[i] == min_val:
             return i
+
+def _get_min_indexes(lst):
+    min_val = min(lst)
+    out = []
+    for i in range(len(lst)):
+        if lst[i] == min_val:
+            out.append(i)
+    return out
 
 def test_car_generator():
     map = Map.Map('./map_scheme_test')
