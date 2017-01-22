@@ -92,7 +92,7 @@ class CarGenerator:
         for car in cars:
             waiting_cars_cnt_lst = [toll_booth.get_waiting_cars_cnt() for toll_booth in self.toll_booths]
             min_ind = _get_min_index(waiting_cars_cnt_lst)
-            self.toll_booths[min_ind].add_car(car)+
+            self.toll_booths[min_ind].add_car(car)
 
 
 # class TollBooth:  # 收费站的基类
