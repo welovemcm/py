@@ -20,7 +20,7 @@ if __name__ == "__main__":
     car_list = mmap.avi()
     random.shuffle(car_list)
 
-    while (time_t < 1000):
+    while (time_t < 300):
         print("Current Cycle: %d" %(car_generator.update_count))
 
         for a_car in car_list:

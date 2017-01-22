@@ -17,6 +17,7 @@ class Car:
     lane_map = None
     is_auto = None
     car_id = None
+    spend_time = None
 
     def __init__(self, speed_x, speed_y, pos_x, pos_y, lane_map, is_auto, car_id):
         self.speed_x = speed_x
@@ -26,6 +27,7 @@ class Car:
         self.lane_map = lane_map
         self.is_auto = is_auto
         self.car_id = car_id
+        self.spend_time = 0
 
     def set_speed_y(self, speed_y):
         self.speed_y = speed_y
@@ -187,7 +189,8 @@ class Car:
         return (self.speed_x, self.speed_y)
 
     def refresh_pos(self):
-        print("Car %d: (%d, %d) --> (%d, %d)" % (self.car_id, self.pos_x, self.pos_y, self.pos_x + self.speed_x, self.pos_y + self.speed_y))
+        self.spend_time += 1
+        print("Car %d: (%d, %d) --> (%d, %d)  spend time: %d" % (self.car_id, self.pos_x, self.pos_y, self.pos_x + self.speed_x, self.pos_y + self.speed_y, self.spend_time))
         self.lane_map.move(self, self.pos_x, self.pos_y, self.pos_x + self.speed_x, self.pos_y + self.speed_y)
         self.pos_x += self.speed_x
         self.pos_y += self.speed_y

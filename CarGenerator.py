@@ -129,7 +129,8 @@ class TollBooth:  # 由人控制的收费站
         # 三种类型：
         # 对于exact-change tollbooths?
 
-        self.in_distance = 100  # 假设是要先行驶100格才能到收费站
+
+        self.in_distance = 50  # 假设是要先行驶100格才能到收费站
         self.mean_service_time = 20  # 秒
         self.service_time_std = 10  # 秒
         if self.type == 'MTC':
