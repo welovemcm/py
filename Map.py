@@ -6,6 +6,7 @@ class Map:
         line_temp=file_temp.readline()
         self.__L=len([i for i in line_temp .split(',') if i==' 0'])
         self.__B=len(line_temp.split(','))
+        self.__car_list=[]
 
         line_count=1
         while(file_temp.readline()):
@@ -66,6 +67,7 @@ class Map:
 
     def put_car(self,x,y,car):
         self.__map[x][y]=car
+        self.__car_list.append(car)
 
     def get_car(self,x,y):
         return self.__map[x][y]
@@ -77,8 +79,16 @@ class Map:
             return 0
 
     def move(self,car,x_start,y_start,x_end,y_end):
+
         self.__map[x_start][y_start]=0
-        self.__map[x_end][y_end]=car
+        try:
+            self.__map[x_end][y_end]=car
+        except IndexError:
+            print "car going out of map!"
+            self.__car_list.remove(car)
+
+    def avi(self):
+        return self.__car_list
 
 
 # have_car(x,y)
