@@ -114,17 +114,36 @@ class TollBooth:  # 由人控制的收费站
         self.map = map
         self.update_interval = g_update_interval
         self.location = location  # 所处道路的编号
-        self.type = tb_type  # 收费站的类型，有三种，类型会影响车辆放行的时间，此外还会影响放行车辆时车辆的速度  conventional (human-staffed) tollbooths, exact-change (automated) tollbooths, and electronic toll collection booths
+        self.type = tb_type  # 收费站的类型，有三种，类型会影响车辆放行的时间，此外还会影响放行车辆时车辆的速度
+        # MTC: conventional (human-staffed) tollbooths,
+        # ATC: exact-change (automated) tollbooths, and
+        # ETC: electronic toll collection booths
         # 对于有人的，车辆肯定会停下来
         # 三种类型：
         # 对于exact-change tollbooths?
 
+        self.in_distance = 100  # 假设是要先行驶100格才能到收费站
+        self.mean_service_time = 20  # 秒
+        self.service_time_std = 10 # 秒
+        if self.type == 'MTC':
+            self.mean_service_time = 20
+            self.service_time_std = 10
+        elif self.type == 'ATC':
+            self.mean_service_time = 10
+            self.service_time_std = 5
+
     # def car_in(self, car):
     #     if len(self.wait_queue) < 1:  # 等待队列中没有车
 
-    def calc_this_car_process_time(self):  # 应对以后需要随机处理时间的情况
-
-        return self.solid_car_process_time
+    def calc_this_car_process_time(self):  # 应对以后需要随机处理时间的情况, 包括两部分，减速时间和处理时间
+        car = self.car_in_process
+        if self.type == 'ETC':
+            return self.in_distance / car.get_speed_y()
+        elif self.type == 'MTC' or self.type == 'ATC':
+            t_in = 2 * self.in_distance / car.get_speed_y()
+            t_service = random.normalvariate(self.mean_service_time, self.service_time_std)
+            return t_in + t_service
+        raise Exception('unknown toll booth type')
 
     def get_waiting_cars_cnt(self):  # 返回等待队列中的车数 + 当前收费站正在处理的车数
         if self.car_in_process:
@@ -155,6 +174,8 @@ class TollBooth:  # 由人控制的收费站
                 if self.map.have_car(self.location, 0):  # 如果要放入的格子里有车，就不能放行
                     self.current_car_remaining_process_time = self.update_interval  # 放入下次update中继续检查
                 else:  # 要放入的格子里没有车
+                    if self.type == 'MTC' or self.type == 'ATC':
+                        self.car_in_process.set_speed_y(0)  # 非自动收费的要减速到0
                     self.map.put_car(self.location, 0, self.car_in_process)
                     self.car_in_process = None  # 清空当前处理的car
                     # 放进来新的car 到收费站
