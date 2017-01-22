@@ -1,4 +1,4 @@
-# coding = utf-8
+# coding=utf-8
 # Author: Yanda Li
 # E-mail: 15810271029@163.com
 # Time created: 2017/1/21

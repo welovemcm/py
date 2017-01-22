@@ -7,10 +7,10 @@ import Queue
 import random
 import math
 import Map
-import Car_mock as car_cls
+import Car as car_cls
 
 
-g_update_interval = 0.1
+g_update_interval = 1  # 默认每次更新过1s
 tmp_n_toll_booths = 6  # TODO 这个实际上应该是__B
 # generate cars for map to use
 
@@ -42,7 +42,7 @@ class CarGenerator:
         print [tb.get_waiting_cars_cnt() for tb in self.toll_booths]
 
     def __init_toll_baths(self):  # 还要支持不同收费站比例的变化
-        return [TollBooth(self.map, i, 'manned') for i in range(tmp_n_toll_booths)]
+        return [TollBooth(self.map, i, 'ATC') for i in range(tmp_n_toll_booths)]
 
 
     def __vehicle_flow_probability_function(self, n_incoming_cars):
@@ -71,7 +71,7 @@ class CarGenerator:
         # 第一步 在 fan_out_start_point 生成车流，其车流量为 incoming_traffic_flow
         # 可以是每秒钟固定有 incoming_traffic_flow 辆车
         n_this_time_interval_incoming_cars = self.calc_this_time_interval_coming_cars()
-        cars = [car_cls.Car() for i in range(n_this_time_interval_incoming_cars)]
+        cars = [car_cls.Car(0, 10, 0, 0, self.map, False, self.__this_car_id()) for i in range(n_this_time_interval_incoming_cars)]
 
         # 第二步，在收费站之间分配车辆
         self.dispatch_cars_between_toll_booths_in_one_update_interval(cars)
@@ -200,7 +200,7 @@ def _get_min_index(lst):
 
 def test_car_generator():
     map = Map.Map('./map_scheme_test')
-    car_generator = CarGenerator(map, 10)  # 每秒100辆车
+    car_generator = CarGenerator(map, 10)  # 每秒10辆车
     for i in range(100):
         print("cur cycle: ", car_generator.update_count)
         car_generator.update()
