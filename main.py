@@ -15,7 +15,7 @@ if __name__ == "__main__":
     print mmap.get_B()
     print mmap.get_length()
 
-    car_generator = CarGenerator(mmap, 10)  # 每秒10辆车
+    car_generator = CarGenerator(mmap, 3)  # 每秒10辆车
 
     car_list = mmap.avi()
     random.shuffle(car_list)

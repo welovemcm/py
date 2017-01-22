@@ -72,6 +72,7 @@ class CarGenerator:
         # 第一步 在 fan_out_start_point 生成车流，其车流量为 incoming_traffic_flow
         # 可以是每秒钟固定有 incoming_traffic_flow 辆车
         n_this_time_interval_incoming_cars = self.calc_this_time_interval_coming_cars()
+        print "Cargenerator: cycle ", self.update_count, " new cars: ", n_this_time_interval_incoming_cars
         cars = [car_cls.Car(0, 10, 0, 0, self.map, False, self.__this_car_id()) for i in range(n_this_time_interval_incoming_cars)]
 
         # 第二步，在收费站之间分配车辆
@@ -124,15 +125,15 @@ class TollBooth:  # 由人控制的收费站
         # 三种类型：
         # 对于exact-change tollbooths?
 
-        self.in_distance = 100  # 假设是要先行驶100格才能到收费站
+        self.in_distance = 0  # 假设是要先行驶100格才能到收费站
         self.mean_service_time = 20  # 秒
         self.service_time_std = 10  # 秒
         if self.type == 'MTC':
             self.mean_service_time = 20
             self.service_time_std = 10
         elif self.type == 'ATC':
-            self.mean_service_time = 10
-            self.service_time_std = 5
+            self.mean_service_time = 1
+            self.service_time_std = 0.2
 
     # def car_in(self, car):
     #     if len(self.wait_queue) < 1:  # 等待队列中没有车
@@ -174,6 +175,7 @@ class TollBooth:  # 由人控制的收费站
             self.current_car_remaining_process_time -= self.update_interval
             if self.current_car_remaining_process_time <= 0:  # 当前车辆已经处理完了，需要决定是否放行，TODO  要检查相邻收费站的情况，有同时放行车辆是否要延后其中某一辆
                 if self.map.have_car(self.location, 0):  # 如果要放入的格子里有车，就不能放行
+                    # print "have car in map x,0"
                     self.current_car_remaining_process_time = self.update_interval  # 放入下次update中继续检查
                 else:  # 要放入的格子里没有车
                     if self.type == 'MTC' or self.type == 'ATC':
