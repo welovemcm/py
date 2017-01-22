@@ -6,9 +6,12 @@
 import Queue
 import random
 import math
+import Map
 import Car_mock as car_cls
 
+
 g_update_interval = 0.1
+tmp_n_toll_booths = 6  # TODO 这个实际上应该是__B
 # generate cars for map to use
 
 # 模型假设
@@ -24,30 +27,39 @@ class CarGenerator:
         self.update_count = 0  # 到目前为止调用了多少次更新
         self.toll_booths = self.__init_toll_baths()
         self.incoming_traffic_flow = incoming_traffic_flow  # 在fan_out_start_point进入的车辆数目
-
+        self.cur_generated_car_id = -1
         # 初始化概率表
         self.max_probability_lst_len = 100
-        # 累积一下
         self.probability_lst = [self.__vehicle_flow_probability_function(i) for i in range(self.max_probability_lst_len)]
         for i in range(1, self.max_probability_lst_len):
             self.probability_lst[i] += self.probability_lst[i - 1]
 
-    def __init_toll_baths(self):
-        return [TollBooth for i in range(10)]
+    def __this_car_id(self):
+        self.cur_generated_car_id += 1
+        return self.cur_generated_car_id
+
+    def print_toll_booths_waiting_queue(self):
+        print [tb.get_waiting_cars_cnt() for tb in self.toll_booths]
+
+    def __init_toll_baths(self):  # 还要支持不同收费站比例的变化
+        return [TollBooth(self.map, i, 'manned') for i in range(tmp_n_toll_booths)]
 
 
     def __vehicle_flow_probability_function(self, n_incoming_cars):
-        lam = self.incoming_traffic_flow / self.update_interval
+        lam = self.incoming_traffic_flow * self.update_interval
         exp_lam = math.exp(-1.0 * lam)
         if n_incoming_cars == 0:
             return exp_lam
-        return pow(lam, n_incoming_cars) / math.factorial(n_incoming_cars)
+        return pow(lam, n_incoming_cars) / math.factorial(n_incoming_cars) * exp_lam
 
 
     def __determine_k(self, prob):
         for i in range(self.max_probability_lst_len):
             if prob < self.probability_lst[i]:
                 return i - 1
+
+    def update(self):
+        self.__update_constant_vehicle_flow()
 
 
     def __update_constant_vehicle_flow(self):
@@ -93,16 +105,18 @@ class CarGenerator:
 # 先写最简单的，处理完之后直接放行
 
 class TollBooth:  # 由人控制的收费站
-    def __init__(self, map, location, type):
+    def __init__(self, map, location, tb_type):
         self.wait_queue = []
         self.update_count = 0
         self.car_in_process = None
         self.current_car_remaining_process_time = None
-        self.solid_car_process_time = 0
+        self.solid_car_process_time = 1
         self.map = map
         self.update_interval = g_update_interval
         self.location = location  # 所处道路的编号
-        self.type = type  # 收费站的类型，有三种
+        self.type = tb_type  # 收费站的类型，有三种，类型会影响车辆放行的时间  conventional (human-staffed) tollbooths, exact-change (automated) tollbooths, and electronic toll collection booths
+        # 对于有人的，车辆肯定会停下来
+        # 对于exact-change tollbooths?
 
     # def car_in(self, car):
     #     if len(self.wait_queue) < 1:  # 等待队列中没有车
@@ -161,10 +175,18 @@ def _get_min_index(lst):
         if lst[i] == min_val:
             return i
 
-
+def test_car_generator():
+    map = Map.Map('./map_scheme_test')
+    car_generator = CarGenerator(map, 10)  # 每秒100辆车
+    for i in range(100):
+        print("cur cycle: ", car_generator.update_count)
+        car_generator.update()
+        car_generator.print_toll_booths_waiting_queue()
+        car_generator.map.show_map()
 
 
 
 if __name__ == '__main__':
+    test_car_generator()
 
     pass
