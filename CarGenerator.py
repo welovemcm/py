@@ -32,6 +32,7 @@ class CarGenerator:
         # 初始化概率表
         self.max_probability_lst_len = 10
         self.probability_lst = [self.__vehicle_flow_probability_function(i) for i in range(self.max_probability_lst_len)]
+        self.debug = False
         for i in range(1, self.max_probability_lst_len):
             self.probability_lst[i] += self.probability_lst[i - 1]
 
@@ -41,6 +42,9 @@ class CarGenerator:
 
     def print_toll_booths_waiting_queue(self):
         print [tb.get_waiting_cars_cnt() for tb in self.toll_booths]
+
+    def sum_toll_booths_waiting_cars_cnt(self):
+        return sum([tb.get_waiting_cars_cnt() for tb in self.toll_booths])
 
     def __init_toll_baths(self):  # 还要支持不同收费站比例的变化
         return [TollBooth(self.map, i, 'ATC') for i in range(self.map.get_B())]
@@ -74,7 +78,8 @@ class CarGenerator:
         # 可以是每秒钟固定有 incoming_traffic_flow 辆车
         n_this_time_interval_incoming_cars = self.calc_this_time_interval_coming_cars()
         self.new_cars_cnt += n_this_time_interval_incoming_cars
-        print "Cargenerator: cycle ", self.update_count, " new cars this time: ", n_this_time_interval_incoming_cars, "new cars cnt: ", self.new_cars_cnt
+        if (self.debug):
+            print "Cargenerator: cycle ", self.update_count, " new cars this time: ", n_this_time_interval_incoming_cars, "new cars cnt: ", self.new_cars_cnt
         cars = [car_cls.Car(0, 10, 0, 0, self.map, False, self.__this_car_id()) for i in range(n_this_time_interval_incoming_cars)]
 
         # 第二步，在收费站之间分配车辆

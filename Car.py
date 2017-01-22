@@ -18,6 +18,8 @@ class Car:
     is_auto = None
     car_id = None
     spend_time = None
+    dec_cnt = None
+    debug = None
 
     def __init__(self, speed_x, speed_y, pos_x, pos_y, lane_map, is_auto, car_id):
         self.speed_x = speed_x
@@ -28,6 +30,8 @@ class Car:
         self.is_auto = is_auto
         self.car_id = car_id
         self.spend_time = 0
+        self.dec_cnt = 0
+        self.debug = False
 
     def set_speed_y(self, speed_y):
         self.speed_y = speed_y
@@ -115,6 +119,7 @@ class Car:
 
 
     def refresh_speed(self):
+        origin_speed_y = self.speed_y
         # print("pos: %d, %d" %(self.pos_x, self.pos_y))
         if (self.is_auto == False):# 非自动驾驶
             # 行进步骤
@@ -186,11 +191,16 @@ class Car:
                     else:
                         self.speed_x = 0
         # print("Car %d speed = %d, %d" %(self.car_id, self.speed_x, self.speed_y))
+        dec = origin_speed_y - self.speed_y
+        if (dec >= 3):# 判断为急刹车
+            if (self.pos_y + self.speed_y + 1 < self.lane_map.get_length and self.lane_map.is_road(self.pos_x + self.speed_x, self.pos_y + self.speed_y + 1) == True):# 由于车辆刹车
+                self.dec_cnt += 1
         return (self.speed_x, self.speed_y)
 
     def refresh_pos(self):
         self.spend_time += 1
-        print("Car %d: (%d, %d) --> (%d, %d)  spend time: %d" % (self.car_id, self.pos_x, self.pos_y, self.pos_x + self.speed_x, self.pos_y + self.speed_y, self.spend_time))
+        if (self.debug):
+            print("Car %d: (%d, %d) --> (%d, %d)  spend time: %d" % (self.car_id, self.pos_x, self.pos_y, self.pos_x + self.speed_x, self.pos_y + self.speed_y, self.spend_time))
         self.lane_map.move(self, self.pos_x, self.pos_y, self.pos_x + self.speed_x, self.pos_y + self.speed_y)
         self.pos_x += self.speed_x
         self.pos_y += self.speed_y
