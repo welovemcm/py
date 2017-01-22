@@ -136,24 +136,32 @@ class Car:
                 print("left! %d, %d" %(self.pos_x, self.pos_y))
                 (gap_f, gap_b, car_b) = self.gap_right()
                 print("gap_f:%d gap_b:%d" %(gap_f, gap_b))
-                if (gap_f > gap and car_b != None and gap_b > car_b.get_speed_y() + 1):# 可以并道
-                    if (CHANGE_LANE_PRO > random.random()):# 并道
+                if (gap_f > gap and (car_b == None or gap_b > car_b.get_speed_y() + 1)):# 可以并道
+                    if (self.pos_y != self.lane_map.get_length() - 1 and self.lane_map.is_road(self.pos_x, self.pos_y + 1) == False):# 前方汇入，必须并道
                         self.speed_x = 1
                         self.speed_y = min(gap_f, self.speed_y)
-                    else:# 不并道
-                        self.speed_x = 0
+                    else:
+                        if (CHANGE_LANE_PRO > random.random()):# 并道
+                            self.speed_x = 1
+                            self.speed_y = min(gap_f, self.speed_y)
+                        else:# 不并道
+                            self.speed_x = 0
                 else:
                     self.speed_x = 0
             elif (self.pos_x == self.lane_map.get_B() - 1 or self.lane_map.is_road(self.pos_x + 1, self.pos_y) == False):# 最右侧车道
                 print("right! %d, %d" % (self.pos_x, self.pos_y))
                 (gap_f, gap_b, car_b) = self.gap_left()
                 print("gap_f:%d gap_b:%d" % (gap_f, gap_b))
-                if (gap_f > gap and car_b != None and gap_b > car_b.get_speed_y() + 1):# 可以并道
-                    if (CHANGE_LANE_PRO > random.random()):# 并道
+                if (gap_f > gap and (car_b == None or gap_b > car_b.get_speed_y() + 1)):# 可以并道
+                    if (self.pos_y != self.lane_map.get_length() - 1 and self.lane_map.is_road(self.pos_x, self.pos_y + 1) == False):# 前方汇入，必须并道
                         self.speed_x = -1
                         self.speed_y = min(gap_f, self.speed_y)
-                    else:# 不并道
-                        self.speed_x = 0
+                    else:
+                        if (CHANGE_LANE_PRO > random.random()):# 并道
+                            self.speed_x = -1
+                            self.speed_y = min(gap_f, self.speed_y)
+                        else:# 不并道
+                            self.speed_x = 0
                 else:
                     self.speed_x = 0
             else:# 中间车道
@@ -161,7 +169,7 @@ class Car:
                 print("middle! %d, %d" % (self.pos_x, self.pos_y))
                 (gap_fl, gap_bl, car_bl) = self.gap_left()
                 print("gap_fl:%d gap_bl:%d" % (gap_fl, gap_bl))
-                if (gap_fl > gap and car_bl != None and gap_bl > car_bl.get_speed_y() + 1):  # 可以并道
+                if (gap_fl > gap and (car_bl == None or gap_bl > car_bl.get_speed_y() + 1)):  # 可以并道
                     if (CHANGE_LANE_PRO > random.random()):  # 并道
                         self.speed_x = -1
                         self.speed_y = min(gap_fl, self.speed_y)
@@ -171,7 +179,7 @@ class Car:
                 if (left_checked == False):# 不向左并道，考虑向右并道
                     (gap_fr, gap_br, car_br) = self.gap_right()
                     print("gap_fr:%d gap_br:%d" % (gap_fr, gap_br))
-                    if (gap_fr > gap and car_br != None and gap_br > car_br.get_speed_y() + 1):  # 可以并道
+                    if (gap_fr > gap and (car_br == None or gap_br > car_br.get_speed_y() + 1)):  # 可以并道
                         if (CHANGE_LANE_PRO > random.random()):  # 并道
                             self.speed_x = 1
                             self.speed_y = min(gap_fr, self.speed_y)
