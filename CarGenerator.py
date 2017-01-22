@@ -181,7 +181,7 @@ class TollBooth:  # 由人控制的收费站
                     self.car_in_process.set_pos_x(self.location)
                     self.car_in_process.set_pos_y(0)
                     self.map.put_car(self.location, 0, self.car_in_process)
-                    print ("put %d" %(self.location))
+                    # print ("put %d" %(self.location))
                     self.car_in_process = None  # 清空当前处理的car
                     # 放进来新的car 到收费站
                     if len(self.wait_queue) > 0:  # 如果当前有车正在等待

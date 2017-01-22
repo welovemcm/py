@@ -53,7 +53,7 @@ class Map:
                     print ' '+str(self.__map[j][i]),
                 else:
                     print ' '+str(self.__map[j][i].car_id),
-            print('\n')
+            print('\n'),
 
     def is_road(self,x,y):
         if self.__map[x][y]!=-1:
@@ -86,7 +86,7 @@ class Map:
         try:
             self.__map[x_end][y_end]=car
         except IndexError:
-            print "car going out of map!"
+            print ("Car %d going out of map!" %(car.car_id))
             self.__car_list.remove(car)
 
     def avi(self):
