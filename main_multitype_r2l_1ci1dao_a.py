@@ -20,7 +20,7 @@ def one_run(traffic_flow):
             print mmap.get_B()
             print mmap.get_length()
 
-        car_generator = CarGeneratorMultiTypes.init_with_default_paras(mmap, traffic_flow)  # 每秒10辆车
+        car_generator = CarGeneratorMultiTypes.init_with_default_paras(mmap, traffic_flow, car_is_auto = True)  # 每秒10辆车
 
         car_list = mmap.avi()
         random.shuffle(car_list)
