@@ -21,7 +21,7 @@ def one_run(traffic_flow):
             print mmap.get_B()
             print mmap.get_length()
 
-        car_generator = CarGeneratorMultiTypes.init_with_default_paras(mmap, traffic_flow)  # 每秒10辆车
+        car_generator = CarGeneratorMultiTypes.init_with_default_paras(mmap, traffic_flow, car_is_auto=False)  # 每秒10辆车
 
         car_list = mmap.avi()
         random.shuffle(car_list)
@@ -64,7 +64,7 @@ def vary_traffic_flow():
     for flow in flows:
         print "===== flow:", flow
         results.append(one_run(flow))
-    with open('./exp/r2l_1ci1dao.dump', 'wb') as f:
+    with open('./exp/r2l_1ci1dao_mixed_tb_m.dump', 'wb') as f:
         pickle.dump(results, f)
 
 if __name__ == "__main__":

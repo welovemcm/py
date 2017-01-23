@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import math
 import pickle
 import os
+import re
 
 
 def _mean(lst):
@@ -58,6 +59,31 @@ def flow_against_y_statics_for_dict_file(exp_result, y_column_index):
     return {'flow': x_flows, 'y_mean': y_mean, 'y_std': y_std}
 
 
+def _divide_with_0(x, y):
+    if y == 0:
+        return 0.0
+    return 1.0 * x / y
+
+
+def flow_against_y_statics_for_dict_file_column1_divided_by_column2(exp_result, column1_ind, column2_ind):
+    c1 = column1_ind
+    c2 = column2_ind
+    flows = []
+    x_flows = flows
+    # ys = []
+    y_mean = []
+    y_std = []
+    for result in exp_result:
+        flows.append(result['flow'])
+        all_ys_in_a_flow = []
+        for sample in result['result']:
+            all_ys_in_a_flow.append(_divide_with_0(sample[c1], sample[c2]))
+        y_mean.append(_mean(all_ys_in_a_flow))
+        y_std.append(_std_sample(all_ys_in_a_flow))
+    return {'flow': x_flows, 'y_mean': y_mean, 'y_std': y_std}
+
+
+
 def plot_flow_against_y(flow_statics, y_axis_label, file_name='pics/fig.pdf'):
     fig, ax = plt.subplots()
     ax.errorbar(flow_statics['flow'], flow_statics['y_mean'], flow_statics['y_std'])
@@ -71,20 +97,47 @@ def plot_flow_against_y(flow_statics, y_axis_label, file_name='pics/fig.pdf'):
 def plot_dump_file(file_name, path):
     with open(path + file_name, 'r') as f:
         exp_results = pickle.load(f)
-    statics = flow_against_y_statics_for_dict_file(exp_results, 1)
     save_picture_fname = 'pics/' + file_name + '_'
+    statics = flow_against_y_statics_for_dict_file(exp_results, 1)
     plot_flow_against_y(statics, 'crash index', save_picture_fname + 'crash_index' + '.eps')
     statics = flow_against_y_statics_for_dict_file(exp_results, 2)
     plot_flow_against_y(statics, 'total exit cars', save_picture_fname + 'total_exit_cars.eps')
     statics = flow_against_y_statics_for_dict_file(exp_results, 4)
     plot_flow_against_y(statics, 'average time spent (second)', save_picture_fname + 'average_time_spent.eps')
+    statics = flow_against_y_statics_for_dict_file_column1_divided_by_column2(exp_results, 1, 2)
+    plot_flow_against_y(statics, 'average crash index per car', save_picture_fname + 'average_crash_index.eps')
+
 
 
 def collect_statics():
     pass
 
 
+pattern = re.compile('.*')
+def plot_multi_files():
+    path = 'exp/'
+    f_names = []
+    for (dirpath, dirnames, filenames) in os.walk(path):
+        f_names.extend(filenames)
+        break
+    filtered_names = []
+    for name in f_names:
+        if pattern.search(name):
+            filtered_names.append(name)
+    for name in filtered_names:
+        plot_dump_file(name, path)
+
+
+
+
+
+
+
+
+
+
 
 if __name__ == '__main__':
-    plot_dump_file('r2l_1ci2dao_m.dump', 'exp/')
+    # plot_dump_file('r2l_1ci2dao_m.dump', 'exp/')
+    plot_multi_files()
 
