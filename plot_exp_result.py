@@ -26,17 +26,31 @@ def _std_sample(lst):
     return std
 
 # plot flow against ave. wait time
-def flow_against_y_statics(exp_result, y_column_index):
-    flows = [0.1 * i for i in range(1, 21)]
-    flows.insert(0, 0.01)
-    assert len(flows) == len(exp_result)
+# def flow_against_y_statics(exp_result, y_column_index):
+#     flows = [0.1 * i for i in range(1, 21)]
+#     flows.insert(0, 0.01)
+#     assert len(flows) == len(exp_result)
+#     x_flows = flows
+#     y_mean = []
+#     y_std = []
+#     for i in range(len(flows)):
+#         this_result = exp_result[i]
+#         all_ys_in_a_flow = []
+#         for sample in this_result:
+#             all_ys_in_a_flow.append(sample[y_column_index])
+#         y_mean.append(_mean(all_ys_in_a_flow))
+#         y_std.append(_std_sample(all_ys_in_a_flow))
+#     return {'flow': x_flows, 'y_mean': y_mean, 'y_std': y_std}
+
+def flow_against_y_statics_for_dict_file(exp_result, y_column_index):
+    flows = []
     x_flows = flows
     y_mean = []
     y_std = []
-    for i in range(len(flows)):
-        this_result = exp_result[i]
+    for result in exp_result:
+        flows.append(result['flow'])
         all_ys_in_a_flow = []
-        for sample in this_result:
+        for sample in result['result']:
             all_ys_in_a_flow.append(sample[y_column_index])
         y_mean.append(_mean(all_ys_in_a_flow))
         y_std.append(_std_sample(all_ys_in_a_flow))
@@ -53,18 +67,18 @@ def plot_flow_against_y(flow_statics, y_axis_label, file_name='pics/fig.pdf'):
     # plt.show()
 
 
-def plot_dump_file(file_name):
-    with open(file_name, 'rb') as f:
+def plot_dump_file(file_name, path):
+    with open(path + file_name, 'rb') as f:
         exp_results = pickle.load(f)
-    statics = flow_against_y_statics(exp_results, 1)
-    tp_fname = 'pics/' + file_name + '_'
-    plot_flow_against_y(statics, 'crash index', tp_fname + 'crash_index' + '.eps')
-    statics = flow_against_y_statics(exp_results, 2)
-    plot_flow_against_y(statics, 'total exit cars', tp_fname + 'total_exit_cars.eps')
-    statics = flow_against_y_statics(exp_results, 4)
-    plot_flow_against_y(statics, 'average time spent (second)', tp_fname + 'average_time_spent.eps')
+    statics = flow_against_y_statics_for_dict_file(exp_results, 1)
+    save_picture_fname = 'pics/' + file_name + '_'
+    plot_flow_against_y(statics, 'crash index', save_picture_fname + 'crash_index' + '.eps')
+    statics = flow_against_y_statics_for_dict_file(exp_results, 2)
+    plot_flow_against_y(statics, 'total exit cars', save_picture_fname + 'total_exit_cars.eps')
+    statics = flow_against_y_statics_for_dict_file(exp_results, 4)
+    plot_flow_against_y(statics, 'average time spent (second)', save_picture_fname + 'average_time_spent.eps')
 
 
 if __name__ == '__main__':
-    plot_dump_file('exp_wk_1ci2dao_center_AUTOCAR.dump')
+    plot_dump_file('r2l_1ci2dao_m.dump', 'exp/')
 
