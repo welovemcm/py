@@ -29,6 +29,7 @@ class CarGeneratorMultiTypes:
         self.update_count = 0  # 到目前为止调用了多少次更新
         self.toll_booths = self.__init_toll_baths()
         self.incoming_traffic_flow = incoming_traffic_flow  # 在fan_out_start_point进入的车辆数目
+        self.car_proportion_dict = dict()
         self.cur_generated_car_id = 0
         self.new_cars_cnt = 0
         # 初始化概率表
@@ -42,9 +43,15 @@ class CarGeneratorMultiTypes:
         self.cur_generated_car_id += 1
         return self.cur_generated_car_id
 
-    def set_toll_booths(self, tollbooths):
+    def set_toll_booths(self, tollbooths):  # 设置不同类型的收费站
         assert len(tollbooths) == self.map.get_B()
         self.toll_booths = tollbooths
+
+    def set_car_proportions(self, car_proportion_dict):
+        self.car_proportion_dict = car_proportion_dict
+
+
+
 
     def print_toll_booths_waiting_queue(self):
         print [tb.get_waiting_cars_cnt() for tb in self.toll_booths]

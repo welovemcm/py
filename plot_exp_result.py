@@ -57,7 +57,7 @@ def plot_dump_file(file_name):
     with open(file_name, 'rb') as f:
         exp_results = pickle.load(f)
     statics = flow_against_y_statics(exp_results, 1)
-    tp_fname = 'pics/' + file_name
+    tp_fname = 'pics/' + file_name + '_'
     plot_flow_against_y(statics, 'crash index', tp_fname + 'crash_index' + '.eps')
     statics = flow_against_y_statics(exp_results, 2)
     plot_flow_against_y(statics, 'total exit cars', tp_fname + 'total_exit_cars.eps')
@@ -66,5 +66,5 @@ def plot_dump_file(file_name):
 
 
 if __name__ == '__main__':
-    plot_dump_file('exp1_1ci1dao.dump')
+    plot_dump_file('exp_wk_1ci2dao_center_AUTOCAR.dump')
 

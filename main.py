@@ -12,10 +12,10 @@ import pickle
 def one_run(traffic_flow):
     out = []
     case = 0
-    while (case < 10):
+    while (case < 3):
         debug = False
         time_t = 0
-        mmap = Map('./map_scheme_test_1')
+        mmap = Map('./map_scheme_test_1ci1dao.txt')
         if (debug):
             print mmap.get_L()
             print mmap.get_B()
@@ -58,13 +58,14 @@ def one_run(traffic_flow):
 
 
 def vary_traffic_flow():
-    flows = [0.1 * i for i in range(1, 21)]
-    flows.insert(0, 0.01)
+    # flows = [0.1 * i for i in range(1, 21)]
+    # flows.insert(0, 0.01)
+    flows = [3.0]
     results = []
     for flow in flows:
         print "===== flow:", flow
         results.append(one_run(flow))
-    with open('exp_wk_1ci2dao_center.dump', 'wb') as f:
-        pickle.dump(results, f)
+    # with open('exp_wk_1ci1dao_AUTOCAR.dump', 'wb') as f:
+    #     pickle.dump(results, f)
 if __name__ == "__main__":
     vary_traffic_flow()
