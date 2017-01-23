@@ -11,7 +11,6 @@ import Car as car_cls
 
 
 g_update_interval = 1  # 默认每次更新过1s
-tmp_n_toll_booths = 6  # TODO 这个实际上应该是__B
 etc_car_out_speed = 6 # etc车辆驶出收费站的速度是 6格每秒
 # generate cars for map to use
 
@@ -23,13 +22,18 @@ etc_car_out_speed = 6 # etc车辆驶出收费站的速度是 6格每秒
 
 # TODO 升级，
 class CarGeneratorMultiTypes:
-    def __init__(self, map, incoming_traffic_flow):
+    def __init__(self, map, incoming_traffic_flow, tollbooths, car_tollbooth_proportion_accum_list, car_tollbooth_types):
         self.map = map
         self.update_interval = g_update_interval   # 每次调用update，系统时间过去0.1s
         self.update_count = 0  # 到目前为止调用了多少次更新
-        self.toll_booths = self.__init_toll_baths()
+        self.toll_booths = []
+        self.etc_car_fit_tollbooths = []
+        self.atc_car_fit_tollbooths = []
+        self.mtc_car_fit_tollbooths = []
+        self.set_toll_booths(tollbooths)
         self.incoming_traffic_flow = incoming_traffic_flow  # 在fan_out_start_point进入的车辆数目
-        self.car_proportion_dict = dict()
+        self.car_tollbooth_proportion_list = car_tollbooth_proportion_accum_list
+        self.car_tollbooth_types = car_tollbooth_types
         self.cur_generated_car_id = 0
         self.new_cars_cnt = 0
         # 初始化概率表
@@ -39,6 +43,17 @@ class CarGeneratorMultiTypes:
         for i in range(1, self.max_probability_lst_len):
             self.probability_lst[i] += self.probability_lst[i - 1]
 
+    @classmethod
+    def init_with_default_paras(cls, map, incoming_traffic_flow):
+        car_tollbooth_proportion_accum_list = [3.0 / 8, 7.5 / 8, 8 / 8]  # 最后一个必须是1
+        car_tollbooth_types = ['ETC', "ATC", 'MTC']
+        tollbooth_types = ['ETC', 'ATC', 'ATC', 'ATC', 'ATC', 'ATC', 'ATC', 'MTC']
+        tollbooths = []
+        for i in range(8):
+            tollbooth = TollBooth(map, i, tollbooth_types[i])
+            tollbooths.append(tollbooth)
+        return CarGeneratorMultiTypes(map, incoming_traffic_flow, tollbooths, car_tollbooth_proportion_accum_list, car_tollbooth_types)
+
     def __this_car_id(self):
         self.cur_generated_car_id += 1
         return self.cur_generated_car_id
@@ -46,12 +61,24 @@ class CarGeneratorMultiTypes:
     def set_toll_booths(self, tollbooths):  # 设置不同类型的收费站
         assert len(tollbooths) == self.map.get_B()
         self.toll_booths = tollbooths
+        self.etc_car_fit_tollbooths = [tollbooth for tollbooth in self.toll_booths if tollbooth.type == 'ETC']
+        self.mtc_car_fit_tollbooths = [tollbooth for tollbooth in self.toll_booths if tollbooth.type == 'MTC']
+        self.atc_car_fit_tollbooths = [tollbooth for tollbooth in self.toll_booths if tollbooth.type == 'ATC']
+        assert sum([len(l) for l in [self.etc_car_fit_tollbooths, self.mtc_car_fit_tollbooths, self.atc_car_fit_tollbooths]]) == len(self.toll_booths)
+        self.mtc_car_fit_tollbooths.extend(self.atc_car_fit_tollbooths)
+        self.etc_car_fit_tollbooths.extend(self.mtc_car_fit_tollbooths)
 
-    def set_car_proportions(self, car_proportion_dict):
-        self.car_proportion_dict = car_proportion_dict
 
+    # def set_car_proportions(self, car_proportion_dict):
+    #     self.car_tollbooth_proportion_list = car_proportion_dict
+    #     self.car_tollbooth_types = ['ETC', 'ATC', 'MTC']
 
-
+    def rnd_car_tollbooth_type(self):  # TODO 初始化时需要设置车辆比例
+        rnd = random.random()
+        for i in range(len(self.car_tollbooth_proportion_list)):
+            if rnd <= self.car_tollbooth_proportion_list[i]:
+                return self.car_tollbooth_types[i]
+        raise Exception('unmatched prob')
 
     def print_toll_booths_waiting_queue(self):
         print [tb.get_waiting_cars_cnt() for tb in self.toll_booths]
@@ -59,7 +86,7 @@ class CarGeneratorMultiTypes:
     def sum_toll_booths_waiting_cars_cnt(self):
         return sum([tb.get_waiting_cars_cnt() for tb in self.toll_booths])
 
-    def __init_toll_baths(self):  # 还要支持不同收费站比例的变化
+    def __init_toll_baths(self):  # 还要支持不同收费站比例的变化， 默认全是自动收费站
         return [TollBooth(self.map, i, 'ATC') for i in range(self.map.get_B())]
 
 
@@ -94,6 +121,8 @@ class CarGeneratorMultiTypes:
         if (self.debug):
             print "Cargenerator: cycle ", self.update_count, " new cars this time: ", n_this_time_interval_incoming_cars, "new cars cnt: ", self.new_cars_cnt
         cars = [car_cls.Car(0, 10, 0, 0, self.map, False, self.__this_car_id()) for i in range(n_this_time_interval_incoming_cars)]
+        for car in cars:
+            car.tollbooth_type = self.rnd_car_tollbooth_type()
 
         # 第二步，在收费站之间分配车辆
         self.dispatch_cars_between_toll_booths_in_one_update_interval(cars)
@@ -110,12 +139,20 @@ class CarGeneratorMultiTypes:
         return n_this_interval_incoming_cars
 
     def dispatch_cars_between_toll_booths_in_one_update_interval(self, cars):
-        # 每次取等待队列中在等待车辆最少的收费站
+        # 每次取期望等待时间最短
         for car in cars:
-            waiting_cars_cnt_lst = [toll_booth.get_waiting_cars_cnt() for toll_booth in self.toll_booths]
+            if car.tollbooth_type == 'ATC':
+                toll_booths_fit_car = self.atc_car_fit_tollbooths
+            elif car.tollbooth_type == 'MTC':
+                toll_booths_fit_car = self.mtc_car_fit_tollbooths
+            elif car.tollbooth_type == 'ETC':
+                toll_booths_fit_car = self.etc_car_fit_tollbooths
+            else:
+                raise Exception('unknown car type')
+            waiting_cars_cnt_lst = [toll_booth.get_approx_expected_waiting_time(car) for toll_booth in toll_booths_fit_car]
             min_ind_lst = _get_min_indexes(waiting_cars_cnt_lst)
             min_ind = min_ind_lst[random.randint(0, len(min_ind_lst) - 1)]  # 随机选择一个
-            self.toll_booths[min_ind].add_car_new(car)
+            toll_booths_fit_car[min_ind].add_car_new(car)
 
 
 # class TollBooth:  # 收费站的基类
@@ -152,11 +189,16 @@ class TollBooth:  # 由人控制的收费站
         self.mean_service_time = 20  # 秒
         self.service_time_std = 10  # 秒
         if self.type == 'MTC':
-            self.mean_service_time = 20
-            self.service_time_std = 10
+            self.mean_service_time = 10
+            self.service_time_std = 3
         elif self.type == 'ATC':
-            self.mean_service_time = 1
-            self.service_time_std = 0.2
+            self.mean_service_time = 5
+            self.service_time_std = 1
+        elif self.type == 'ETC':
+            self.mean_service_time = 0
+            self.service_time_std = 0
+        else:
+            raise Exception('unknown tollbooth type ')
 
     # def car_in(self, car):
     #     if len(self.wait_queue) < 1:  # 等待队列中没有车
@@ -174,12 +216,27 @@ class TollBooth:  # 由人控制的收费站
 
     def get_waiting_cars_cnt(self):  # 返回等待队列中的车数 + 当前收费站正在处理的车数
         if self.car_in_process:
-            return len(self.wait_queue) + 1
+            return len(self.wait_queue) + 1 +len(self.in_road_queue)
         else:
-            return len(self.wait_queue)
+            return len(self.wait_queue) + len(self.in_road_queue)
+
+    def get_approx_expected_waiting_time(self, car):  # 并不是完全精确的等待时间.估算方式：max(当前等待车辆数* 平均每车处理时间 - 驶到收费站时间,0) + 收费站服务时间. # 确保ETC车辆总是选择ETC
+        return max(self.get_waiting_cars_cnt() * self.mean_service_time - self.calc_car_in_distance_time(car), 0) + self.mean_service_time
+
+    def calc_car_in_distance_time(self, car):
+        if self.type == 'MTC' or self.type == 'ATC':
+            return 2.0 * self.in_distance / car.get_speed_y()
+        elif self.type == 'ETC':
+            return 1.0 * self.in_distance / car.get_speed_y()
+        else:
+            raise Exception('unknown tollbooth type')
+
+
 
     def add_car_new(self, car):
         self.add_car_to_in_road_queue(car)
+
+
 
     def add_car_to_in_road_queue(self, car):
         self.in_road_queue.append(car)
@@ -260,8 +317,15 @@ def _get_min_indexes(lst):
     return out
 
 def test_car_generator():
-    map = Map.Map('./map_scheme_test')
-    car_generator = CarGenerator(map, 10)  # 每秒10辆车
+    map = Map.Map('./map_scheme_test_1')
+    car_tollbooth_proportion_accum_list = [3.0/8, 7.5/8, 8/8]  # 最后一个必须是1
+    car_tollbooth_types = ['ETC', "ATC", 'MTC']
+    tollbooth_types = ['ETC', 'ATC', 'ATC', 'ATC', 'ATC', 'ATC', 'ATC', 'MTC']
+    tollbooths = []
+    for i in range(8):
+        tollbooth = TollBooth(map, i, tollbooth_types[i])
+        tollbooths.append(tollbooth)
+    car_generator = CarGeneratorMultiTypes(map, 10, tollbooths, car_tollbooth_proportion_accum_list, car_tollbooth_types)  # 每秒10辆车
     for i in range(100):
         print("cur cycle: ", car_generator.update_count)
         car_generator.update()

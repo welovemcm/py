@@ -162,9 +162,9 @@ class TollBooth:  # 由人控制的收费站
 
     def get_waiting_cars_cnt(self):  # 返回等待队列中的车数 + 当前收费站正在处理的车数
         if self.car_in_process:
-            return len(self.wait_queue) + 1
+            return len(self.wait_queue) + 1 +len(self.in_road_queue)
         else:
-            return len(self.wait_queue)
+            return len(self.wait_queue) + len(self.in_road_queue)
 
     def add_car_new(self, car):
         self.add_car_to_in_road_queue(car)
