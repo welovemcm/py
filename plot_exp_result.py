@@ -68,7 +68,7 @@ def plot_flow_against_y(flow_statics, y_axis_label, file_name='pics/fig.pdf'):
 
 
 def plot_dump_file(file_name, path):
-    with open(path + file_name, 'rb') as f:
+    with open(path + file_name, 'r') as f:
         exp_results = pickle.load(f)
     statics = flow_against_y_statics_for_dict_file(exp_results, 1)
     save_picture_fname = 'pics/' + file_name + '_'
