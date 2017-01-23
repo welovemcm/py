@@ -81,7 +81,7 @@ class CarGenerator:
         self.new_cars_cnt += n_this_time_interval_incoming_cars
         if (self.debug):
             print "Cargenerator: cycle ", self.update_count, " new cars this time: ", n_this_time_interval_incoming_cars, "new cars cnt: ", self.new_cars_cnt
-        cars = [car_cls.Car(0, 10, 0, 0, self.map, False, self.__this_car_id()) for i in range(n_this_time_interval_incoming_cars)]
+        cars = [car_cls.Car(0, 10, 0, 0, self.map, True, self.__this_car_id()) for i in range(n_this_time_interval_incoming_cars)]
 
         # 第二步，在收费站之间分配车辆
         self.dispatch_cars_between_toll_booths_in_one_update_interval(cars)
