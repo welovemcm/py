@@ -11,7 +11,6 @@ import Car as car_cls
 
 
 g_update_interval = 1  # 默认每次更新过1s
-tmp_n_toll_booths = 6  # TODO 这个实际上应该是__B
 # generate cars for map to use
 
 # 模型假设

@@ -33,6 +33,7 @@ class Car:
         self.spend_time = 0
         self.dec_cnt = 0
         self.debug = False
+        self.tollbooth_type = 'ATC'
 
     def set_speed_y(self, speed_y):
         self.speed_y = speed_y
