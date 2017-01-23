@@ -22,7 +22,7 @@ etc_car_out_speed = 3 # etc车辆驶出收费站的速度是 3格每秒
 
 # TODO 升级，
 class CarGeneratorMultiTypes:
-    def __init__(self, map, incoming_traffic_flow, tollbooths, car_tollbooth_proportion_accum_list, car_tollbooth_types):
+    def __init__(self, map, incoming_traffic_flow, tollbooths, car_tollbooth_proportion_accum_list, car_tollbooth_types, car_is_auto=False):
         self.map = map
         self.update_interval = g_update_interval   # 每次调用update，系统时间过去0.1s
         self.update_count = 0  # 到目前为止调用了多少次更新
@@ -36,6 +36,7 @@ class CarGeneratorMultiTypes:
         self.car_tollbooth_types = car_tollbooth_types
         self.cur_generated_car_id = 0
         self.new_cars_cnt = 0
+        self.car_is_auto = car_is_auto
         # 初始化概率表
         self.max_probability_lst_len = 10
         self.probability_lst = [self.__vehicle_flow_probability_function(i) for i in range(self.max_probability_lst_len)]
@@ -44,7 +45,7 @@ class CarGeneratorMultiTypes:
             self.probability_lst[i] += self.probability_lst[i - 1]
 
     @classmethod
-    def init_with_default_paras(cls, map, incoming_traffic_flow):
+    def init_with_default_paras(cls, map, incoming_traffic_flow, car_is_auto=False):
         car_tollbooth_proportion_accum_list = [0.4, 0.4 + 0.55, 0.4 + 0.55 + 0.05]  # 最后一个必须是1
         car_tollbooth_types = ['ETC', "ATC", 'MTC']
         tollbooth_types = ['ETC', 'ETC', 'ATC', 'ATC', 'ATC', 'ATC', 'ATC', 'MTC']
@@ -52,7 +53,7 @@ class CarGeneratorMultiTypes:
         for i in range(8):
             tollbooth = TollBooth(map, i, tollbooth_types[i])
             tollbooths.append(tollbooth)
-        return CarGeneratorMultiTypes(map, incoming_traffic_flow, tollbooths, car_tollbooth_proportion_accum_list, car_tollbooth_types)
+        return CarGeneratorMultiTypes(map, incoming_traffic_flow, tollbooths, car_tollbooth_proportion_accum_list, car_tollbooth_types, car_is_auto=car_is_auto)
 
     def __this_car_id(self):
         self.cur_generated_car_id += 1
@@ -120,7 +121,7 @@ class CarGeneratorMultiTypes:
         self.new_cars_cnt += n_this_time_interval_incoming_cars
         if (self.debug):
             print "Cargenerator: cycle ", self.update_count, " new cars this time: ", n_this_time_interval_incoming_cars, "new cars cnt: ", self.new_cars_cnt
-        cars = [car_cls.Car(0, 10, 0, 0, self.map, True, self.__this_car_id()) for i in range(n_this_time_interval_incoming_cars)]
+        cars = [car_cls.Car(0, 10, 0, 0, self.map, self.car_is_auto, self.__this_car_id()) for i in range(n_this_time_interval_incoming_cars)]
         for car in cars:
             car.tollbooth_type = self.rnd_car_tollbooth_type()
             # print car.tollbooth_type
