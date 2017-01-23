@@ -9,6 +9,7 @@
 import matplotlib.pyplot as plt
 import math
 import pickle
+import os
 
 
 def _mean(lst):
@@ -68,7 +69,7 @@ def plot_flow_against_y(flow_statics, y_axis_label, file_name='pics/fig.pdf'):
 
 
 def plot_dump_file(file_name, path):
-    with open(path + file_name, 'rb') as f:
+    with open(path + file_name, 'r') as f:
         exp_results = pickle.load(f)
     statics = flow_against_y_statics_for_dict_file(exp_results, 1)
     save_picture_fname = 'pics/' + file_name + '_'
@@ -77,6 +78,11 @@ def plot_dump_file(file_name, path):
     plot_flow_against_y(statics, 'total exit cars', save_picture_fname + 'total_exit_cars.eps')
     statics = flow_against_y_statics_for_dict_file(exp_results, 4)
     plot_flow_against_y(statics, 'average time spent (second)', save_picture_fname + 'average_time_spent.eps')
+
+
+def collect_statics():
+    pass
+
 
 
 if __name__ == '__main__':

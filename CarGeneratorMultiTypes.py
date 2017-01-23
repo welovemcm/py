@@ -11,7 +11,7 @@ import Car as car_cls
 
 
 g_update_interval = 1  # 默认每次更新过1s
-etc_car_out_speed = 6 # etc车辆驶出收费站的速度是 6格每秒
+etc_car_out_speed = 3 # etc车辆驶出收费站的速度是 3格每秒
 # generate cars for map to use
 
 # 模型假设
@@ -45,9 +45,9 @@ class CarGeneratorMultiTypes:
 
     @classmethod
     def init_with_default_paras(cls, map, incoming_traffic_flow):
-        car_tollbooth_proportion_accum_list = [3.0 / 8, 7.5 / 8, 8 / 8]  # 最后一个必须是1
+        car_tollbooth_proportion_accum_list = [0.4, 0.4 + 0.55, 0.4 + 0.55 + 0.05]  # 最后一个必须是1
         car_tollbooth_types = ['ETC', "ATC", 'MTC']
-        tollbooth_types = ['ETC', 'ATC', 'ATC', 'ATC', 'ATC', 'ATC', 'ATC', 'MTC']
+        tollbooth_types = ['ETC', 'ETC', 'ATC', 'ATC', 'ATC', 'ATC', 'ATC', 'MTC']
         tollbooths = []
         for i in range(8):
             tollbooth = TollBooth(map, i, tollbooth_types[i])
@@ -123,6 +123,7 @@ class CarGeneratorMultiTypes:
         cars = [car_cls.Car(0, 10, 0, 0, self.map, False, self.__this_car_id()) for i in range(n_this_time_interval_incoming_cars)]
         for car in cars:
             car.tollbooth_type = self.rnd_car_tollbooth_type()
+            print car.tollbooth_type
 
         # 第二步，在收费站之间分配车辆
         self.dispatch_cars_between_toll_booths_in_one_update_interval(cars)
@@ -282,7 +283,7 @@ class TollBooth:  # 由人控制的收费站
                     if self.type == 'MTC' or self.type == 'ATC':
                         self.car_in_process.set_speed_y(0)  # 非自动收费的要减速到0
                     elif self.type == 'ETC':
-                        self.car_in_process.set_speed_y(6)  # ETC 车辆驶出收费站的速度
+                        self.car_in_process.set_speed_y(etc_car_out_speed)  # ETC 车辆驶出收费站的速度
                     self.car_in_process.set_pos_x(self.location)
                     self.car_in_process.set_pos_y(0)
                     self.map.put_car(self.location, 0, self.car_in_process)

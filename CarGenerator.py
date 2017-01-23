@@ -20,7 +20,7 @@ g_update_interval = 1  # 默认每次更新过1s
 # 假设 每个收费站对应一个道路
 
 class CarGenerator:
-    def __init__(self, map, incoming_traffic_flow):
+    def __init__(self, map, incoming_traffic_flow, car_is_auto=False):
         self.map = map
         self.update_interval = g_update_interval   # 每次调用update，系统时间过去0.1s
         self.update_count = 0  # 到目前为止调用了多少次更新
@@ -28,6 +28,7 @@ class CarGenerator:
         self.incoming_traffic_flow = incoming_traffic_flow  # 在fan_out_start_point进入的车辆数目
         self.cur_generated_car_id = 0
         self.new_cars_cnt = 0
+        self.car_is_auto = car_is_auto
         # 初始化概率表
         self.max_probability_lst_len = 10
         self.probability_lst = [self.__vehicle_flow_probability_function(i) for i in range(self.max_probability_lst_len)]
@@ -81,7 +82,7 @@ class CarGenerator:
         self.new_cars_cnt += n_this_time_interval_incoming_cars
         if (self.debug):
             print "Cargenerator: cycle ", self.update_count, " new cars this time: ", n_this_time_interval_incoming_cars, "new cars cnt: ", self.new_cars_cnt
-        cars = [car_cls.Car(0, 10, 0, 0, self.map, True, self.__this_car_id()) for i in range(n_this_time_interval_incoming_cars)]
+        cars = [car_cls.Car(0, 10, 0, 0, self.map, self.car_is_auto, self.__this_car_id()) for i in range(n_this_time_interval_incoming_cars)]
 
         # 第二步，在收费站之间分配车辆
         self.dispatch_cars_between_toll_booths_in_one_update_interval(cars)
