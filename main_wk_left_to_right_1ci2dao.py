@@ -8,6 +8,7 @@ from CarGenerator import CarGenerator
 from Map import Map
 import random
 import pickle
+from multiprocessing.dummy import Pool
 
 def one_run(traffic_flow):
     out = []
@@ -15,7 +16,7 @@ def one_run(traffic_flow):
     while (case < 10):
         debug = False
         time_t = 0
-        mmap = Map('./map_scheme_test_1')
+        mmap = Map('./map_scheme_test_left_to_right')
         if (debug):
             print mmap.get_L()
             print mmap.get_B()
@@ -47,14 +48,14 @@ def one_run(traffic_flow):
             print ("Total crash cnt: %d\nTotal exit cars: %d\nTotal spend time: %d\nAverage spend time: %f" % (
             mmap.crash_cnt, mmap.exit_car_cnt, mmap.total_exit_time, ave_spend_time))
         else:
-            print ("%d\t%d\t%d\t%d\t%f\t%d" % (
+            print ("flow:%f\t%d\t%d\t%d\t%d\t%f\t%d" % (traffic_flow,
             case, mmap.crash_cnt, mmap.exit_car_cnt, mmap.total_exit_time, ave_spend_time,
             car_generator.sum_toll_booths_waiting_cars_cnt()))
         out.append((case, mmap.crash_cnt, mmap.exit_car_cnt, mmap.total_exit_time, ave_spend_time,
             car_generator.sum_toll_booths_waiting_cars_cnt()))
 
         case += 1
-    return out
+    return {'flow': traffic_flow, 'result': out}
 
 
 def vary_traffic_flow():
@@ -64,7 +65,21 @@ def vary_traffic_flow():
     for flow in flows:
         print "===== flow:", flow
         results.append(one_run(flow))
-    with open('exp_wk_1ci2dao_center.dump', 'wb') as f:
+    with open('exp_wk_left_to_right_1ci2dao.dump', 'wb') as f:
         pickle.dump(results, f)
+#
+# def vary_traffic_flow_multi():
+#     flows = [0.1 * i for i in range(1, 21)]
+#     flows.insert(0, 0.01)
+#     # results = []
+#     pool = Pool(7)
+#     results = pool.map(one_run, flows)
+#     with open('exp_wk_left_to_right_1ci2dao.dump', 'wb') as f:
+#         pickle.dump(results, f)
+#     pool.close()
+#     pool.join()
+
+
+
 if __name__ == "__main__":
     vary_traffic_flow()
