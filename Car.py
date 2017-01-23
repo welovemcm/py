@@ -8,6 +8,7 @@ import Map
 
 DEC_SPEED_PRO = 0.2
 CHANGE_LANE_PRO = 0.5
+SPEED_LIMIT = 8
 
 class Car:
     speed_x = None
@@ -121,18 +122,16 @@ class Car:
     def refresh_speed(self):
         origin_speed_y = self.speed_y
         # print("pos: %d, %d" %(self.pos_x, self.pos_y))
-        if (self.is_auto == False):# 非自动驾驶
+        if (self.is_auto == True):# 自动驾驶
             # 行进步骤
             gap = self.gap_front()
             # print("speed_y = %d" %(self.speed_y))
-            if (self.speed_y >= gap):# 速度大于等于间隔，减速至gap
-                if (DEC_SPEED_PRO > random.random()):# 减速
-                    self.speed_y = max(0, gap - 1)
-                else:# 不减速
-                    self.speed_y = gap
-            else:# 速度小于间隔
-                if (DEC_SPEED_PRO < random.random()):# 加速
-                    self.speed_y += 1
+            if (self.speed_y >= gap and self.speed_y < SPEED_LIMIT):# 速度大于等于间隔，必定减速至gap
+                self.speed_y = gap
+            elif (self.speed_y >= SPEED_LIMIT):# 到达限速,保持
+                self.speed_y = SPEED_LIMIT
+            else:# 速度小于间隔，必定加速
+                self.speed_y += 1
             # print("speed_y = %d" %(self.speed_y))
             # 换道步骤
             if (self.pos_x == 0 or self.lane_map.is_road(self.pos_x - 1, self.pos_y) == False):# 最左侧车道
@@ -190,10 +189,88 @@ class Car:
                             self.speed_x = 0
                     else:
                         self.speed_x = 0
+        else:# 非自动驾驶
+            # 行进步骤
+            gap = self.gap_front()
+            # print("speed_y = %d" %(self.speed_y))
+            if (self.speed_y >= gap and self.speed_y < SPEED_LIMIT):  # 速度大于等于间隔，概率减速至gap
+                if (DEC_SPEED_PRO > random.random()):  # 减速
+                    self.speed_y = max(0, gap - 1)
+                else:  # 不减速
+                    self.speed_y = gap
+            elif (self.speed_y >= SPEED_LIMIT):# 到达限速,保持
+                if (DEC_SPEED_PRO < random.random()):  # 概率保持限速
+                    self.speed_y = SPEED_LIMIT
+                else:
+                    self.speed_y = SPEED_LIMIT - 1
+            else:  # 速度小于间隔
+                if (DEC_SPEED_PRO < random.random()):  # 概率加速
+                    self.speed_y += 1
+            # print("speed_y = %d" %(self.speed_y))
+            # 换道步骤
+            if (self.pos_x == 0 or self.lane_map.is_road(self.pos_x - 1, self.pos_y) == False):  # 最左侧车道
+                # print("left! %d, %d" %(self.pos_x, self.pos_y))
+                (gap_f, gap_b, car_b) = self.gap_right()
+                # print("gap_f:%d gap_b:%d" %(gap_f, gap_b))
+                if (gap_f > gap and (car_b == None or gap_b > SPEED_LIMIT)):  # 可以并道
+                    if (self.pos_y != self.lane_map.get_length() - 1 and self.lane_map.is_road(self.pos_x,
+                                                                                               self.pos_y + 1) == False):  # 前方汇入，必须并道
+                        self.speed_x = 1
+                        self.speed_y = min(gap_f, self.speed_y)
+                    else:
+                        if (CHANGE_LANE_PRO > random.random()):  # 并道
+                            self.speed_x = 1
+                            self.speed_y = min(gap_f, self.speed_y)
+                        else:  # 不并道
+                            self.speed_x = 0
+                else:
+                    self.speed_x = 0
+            elif (self.pos_x == self.lane_map.get_B() - 1 or self.lane_map.is_road(self.pos_x + 1,
+                                                                                   self.pos_y) == False):  # 最右侧车道
+                # print("right! %d, %d" % (self.pos_x, self.pos_y))
+                (gap_f, gap_b, car_b) = self.gap_left()
+                # print("gap_f:%d gap_b:%d" % (gap_f, gap_b))
+                if (gap_f > gap and (car_b == None or gap_b > SPEED_LIMIT)):  # 可以并道
+                    if (self.pos_y != self.lane_map.get_length() - 1 and self.lane_map.is_road(self.pos_x,
+                                                                                               self.pos_y + 1) == False):  # 前方汇入，必须并道
+                        self.speed_x = -1
+                        self.speed_y = min(gap_f, self.speed_y)
+                    else:
+                        if (CHANGE_LANE_PRO > random.random()):  # 并道
+                            self.speed_x = -1
+                            self.speed_y = min(gap_f, self.speed_y)
+                        else:  # 不并道
+                            self.speed_x = 0
+                else:
+                    self.speed_x = 0
+            else:  # 中间车道
+                left_checked = False
+                # print("middle! %d, %d" % (self.pos_x, self.pos_y))
+                (gap_fl, gap_bl, car_bl) = self.gap_left()
+                # print("gap_fl:%d gap_bl:%d" % (gap_fl, gap_bl))
+                if (gap_fl > gap and (car_bl == None or gap_bl > SPEED_LIMIT)):  # 可以并道
+                    if (CHANGE_LANE_PRO > random.random()):  # 并道
+                        self.speed_x = -1
+                        self.speed_y = min(gap_fl, self.speed_y)
+                    else:  # 不并道
+                        self.speed_x = 0
+                    left_checked = True
+                if (left_checked == False):  # 不向左并道，考虑向右并道
+                    (gap_fr, gap_br, car_br) = self.gap_right()
+                    # print("gap_fr:%d gap_br:%d" % (gap_fr, gap_br))
+                    if (gap_fr > gap and (car_br == None or gap_br > SPEED_LIMIT)):  # 可以并道
+                        if (CHANGE_LANE_PRO > random.random()):  # 并道
+                            self.speed_x = 1
+                            self.speed_y = min(gap_fr, self.speed_y)
+                        else:  # 不并道
+                            self.speed_x = 0
+                    else:
+                        self.speed_x = 0
+
         # print("Car %d speed = %d, %d" %(self.car_id, self.speed_x, self.speed_y))
         dec = origin_speed_y - self.speed_y
         if (dec >= 3):# 判断为急刹车
-            if (self.pos_y + self.speed_y + 1 < self.lane_map.get_length and self.lane_map.is_road(self.pos_x + self.speed_x, self.pos_y + self.speed_y + 1) == True):# 由于车辆刹车
+            if (self.pos_y + self.speed_y + 1 < self.lane_map.get_length() and self.lane_map.is_road(self.pos_x + self.speed_x, self.pos_y + self.speed_y + 1) == True):# 由于车辆刹车
                 self.dec_cnt += 1
         return (self.speed_x, self.speed_y)
 

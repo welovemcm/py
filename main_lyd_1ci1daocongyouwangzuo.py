@@ -15,7 +15,7 @@ def one_run(traffic_flow):
     while (case < 10):
         debug = False
         time_t = 0
-        mmap = Map('./map_scheme_test_1')
+        mmap = Map('./map_scheme_test_1ci1daocongyouwangzuo')
         if (debug):
             print mmap.get_L()
             print mmap.get_B()
@@ -64,7 +64,7 @@ def vary_traffic_flow():
     for flow in flows:
         print "===== flow:", flow
         results.append(one_run(flow))
-    with open('exp_lyd_test_not_auto.dump', 'wb') as f:
+    with open('exp_lyd_1ci1daocongyouwangzuo.dump', 'wb') as f:
         pickle.dump(results, f)
 if __name__ == "__main__":
     vary_traffic_flow()
