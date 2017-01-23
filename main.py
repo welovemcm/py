@@ -12,10 +12,10 @@ import pickle
 def one_run(traffic_flow):
     out = []
     case = 0
-    while (case < 3):
+    while (case < 10):
         debug = False
         time_t = 0
-        mmap = Map('./map_scheme_test_1ci1dao.txt')
+        mmap = Map('./map/xxx.testmap')
         if (debug):
             print mmap.get_L()
             print mmap.get_B()
@@ -54,18 +54,18 @@ def one_run(traffic_flow):
             car_generator.sum_toll_booths_waiting_cars_cnt()))
 
         case += 1
-    return out
+    return {'result': out, 'flow':traffic_flow}
 
 
 def vary_traffic_flow():
-    # flows = [0.1 * i for i in range(1, 21)]
-    # flows.insert(0, 0.01)
-    flows = [3.0]
+    flows = [0.2 * i for i in range(1, 16)]
+    flows.insert(0, 0.1)
     results = []
     for flow in flows:
         print "===== flow:", flow
         results.append(one_run(flow))
-    # with open('exp_wk_1ci1dao_AUTOCAR.dump', 'wb') as f:
-    #     pickle.dump(results, f)
+    with open('./exp/xxx.dump', 'wb') as f:
+        pickle.dump(results, f)
+
 if __name__ == "__main__":
     vary_traffic_flow()
