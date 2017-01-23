@@ -40,6 +40,8 @@ class CarGenerator:
         self.cur_generated_car_id += 1
         return self.cur_generated_car_id
 
+    # def set_toll_booths
+
     def print_toll_booths_waiting_queue(self):
         print [tb.get_waiting_cars_cnt() for tb in self.toll_booths]
 
@@ -259,6 +261,4 @@ def test_car_generator():
 
 if __name__ == '__main__':
     test_car_generator()
-
-
     pass
