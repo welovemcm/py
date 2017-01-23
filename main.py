@@ -58,8 +58,9 @@ def one_run(traffic_flow):
 
 
 def vary_traffic_flow():
-    flows = [0.1 * i for i in range(1, 21)]
-    flows.insert(0, 0.01)
+    # flows = [0.1 * i for i in range(1, 21)]
+    # flows.insert(0, 0.01)
+    flows = [2.0]
     results = []
     for flow in flows:
         print "===== flow:", flow

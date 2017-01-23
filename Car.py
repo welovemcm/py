@@ -122,11 +122,11 @@ class Car:
     def refresh_speed(self):
         origin_speed_y = self.speed_y
         # print("pos: %d, %d" %(self.pos_x, self.pos_y))
+        gap = self.gap_front()
         if (self.is_auto == True):# 自动驾驶
             # 行进步骤
-            gap = self.gap_front()
             # print("speed_y = %d" %(self.speed_y))
-            if (self.speed_y >= gap and self.speed_y < SPEED_LIMIT):# 速度大于等于间隔，必定减速至gap
+            if (self.speed_y >= gap and self.speed_y <= SPEED_LIMIT):# 速度大于等于间隔，必定减速至gap
                 self.speed_y = gap
             elif (self.speed_y >= SPEED_LIMIT):# 到达限速,保持
                 self.speed_y = SPEED_LIMIT
@@ -191,9 +191,8 @@ class Car:
                         self.speed_x = 0
         else:# 非自动驾驶
             # 行进步骤
-            gap = self.gap_front()
             # print("speed_y = %d" %(self.speed_y))
-            if (self.speed_y >= gap and self.speed_y < SPEED_LIMIT):  # 速度大于等于间隔，概率减速至gap
+            if (self.speed_y >= gap and self.speed_y <= SPEED_LIMIT):  # 速度大于等于间隔，概率减速至gap
                 if (DEC_SPEED_PRO > random.random()):  # 减速
                     self.speed_y = max(0, gap - 1)
                 else:  # 不减速
