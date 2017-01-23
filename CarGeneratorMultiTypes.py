@@ -7,7 +7,7 @@ import Queue
 import random
 import math
 import Map
-import Car as car_cls
+import Car_barrier as car_cls
 
 
 g_update_interval = 1  # 默认每次更新过1s

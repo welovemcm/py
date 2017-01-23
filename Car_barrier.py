@@ -135,7 +135,7 @@ class Car:
                 self.speed_y += 1
             # print("speed_y = %d" %(self.speed_y))
             # 换道步骤
-            if (self.pos_x == 0 or self.lane_map.is_road(self.pos_x - 1, self.pos_y) == False):# 最左侧车道
+            if (self.pos_x == 0 or self.lane_map.is_road(self.pos_x - 1, self.pos_y) == False or (self.pos_x == 2 and self.pos_y < 50)):# 最左侧车道
                 # print("left! %d, %d" %(self.pos_x, self.pos_y))
                 (gap_f, gap_b, car_b) = self.gap_right()
                 # print("gap_f:%d gap_b:%d" %(gap_f, gap_b))
@@ -151,7 +151,7 @@ class Car:
                             self.speed_x = 0
                 else:
                     self.speed_x = 0
-            elif (self.pos_x == self.lane_map.get_B() - 1 or self.lane_map.is_road(self.pos_x + 1, self.pos_y) == False):# 最右侧车道
+            elif (self.pos_x == self.lane_map.get_B() - 1 or self.lane_map.is_road(self.pos_x + 1, self.pos_y) == False or (self.pos_x == 1 and self.pos_y < 50)):# 最右侧车道
                 # print("right! %d, %d" % (self.pos_x, self.pos_y))
                 (gap_f, gap_b, car_b) = self.gap_left()
                 # print("gap_f:%d gap_b:%d" % (gap_f, gap_b))
@@ -208,7 +208,7 @@ class Car:
                     self.speed_y += 1
             # print("speed_y = %d" %(self.speed_y))
             # 换道步骤
-            if (self.pos_x == 0 or self.lane_map.is_road(self.pos_x - 1, self.pos_y) == False):  # 最左侧车道
+            if (self.pos_x == 0 or self.lane_map.is_road(self.pos_x - 1, self.pos_y) == False or (self.pos_x == 2 and self.pos_y < 50)):  # 最左侧车道
                 # print("left! %d, %d" %(self.pos_x, self.pos_y))
                 (gap_f, gap_b, car_b) = self.gap_right()
                 # print("gap_f:%d gap_b:%d" %(gap_f, gap_b))
@@ -226,7 +226,7 @@ class Car:
                 else:
                     self.speed_x = 0
             elif (self.pos_x == self.lane_map.get_B() - 1 or self.lane_map.is_road(self.pos_x + 1,
-                                                                                   self.pos_y) == False):  # 最右侧车道
+                                                                                   self.pos_y) == False or (self.pos_x == 1 and self.pos_y < 50)):  # 最右侧车道
                 # print("right! %d, %d" % (self.pos_x, self.pos_y))
                 (gap_f, gap_b, car_b) = self.gap_left()
                 # print("gap_f:%d gap_b:%d" % (gap_f, gap_b))
