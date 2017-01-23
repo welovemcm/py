@@ -141,11 +141,11 @@ class TollBooth:  # 由人控制的收费站
         self.mean_service_time = 20  # 秒
         self.service_time_std = 10  # 秒
         if self.type == 'MTC':
-            self.mean_service_time = 20
-            self.service_time_std = 10
+            self.mean_service_time = 10
+            self.service_time_std = 3
         elif self.type == 'ATC':
-            self.mean_service_time = 1
-            self.service_time_std = 0.2
+            self.mean_service_time = 5
+            self.service_time_std = 1
 
     # def car_in(self, car):
     #     if len(self.wait_queue) < 1:  # 等待队列中没有车
