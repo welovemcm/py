@@ -7,7 +7,7 @@ import Queue
 import random
 import math
 import Map
-import Car as car_cls
+import Car_barrier as car_cls
 
 
 g_update_interval = 1  # 默认每次更新过1s
@@ -120,10 +120,10 @@ class CarGeneratorMultiTypes:
         self.new_cars_cnt += n_this_time_interval_incoming_cars
         if (self.debug):
             print "Cargenerator: cycle ", self.update_count, " new cars this time: ", n_this_time_interval_incoming_cars, "new cars cnt: ", self.new_cars_cnt
-        cars = [car_cls.Car(0, 10, 0, 0, self.map, False, self.__this_car_id()) for i in range(n_this_time_interval_incoming_cars)]
+        cars = [car_cls.Car(0, 10, 0, 0, self.map, True, self.__this_car_id()) for i in range(n_this_time_interval_incoming_cars)]
         for car in cars:
             car.tollbooth_type = self.rnd_car_tollbooth_type()
-            print car.tollbooth_type
+            # print car.tollbooth_type
 
         # 第二步，在收费站之间分配车辆
         self.dispatch_cars_between_toll_booths_in_one_update_interval(cars)
